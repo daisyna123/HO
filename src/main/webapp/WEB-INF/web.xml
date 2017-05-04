@@ -5,6 +5,22 @@
 			http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
 
+  <!-- 处理编码问题 -->
+  <filter>
+    <description>字符集过滤器</description>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <description>字符集编码</description>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- spring mvc servlet -->
   <!-- 配置 DispatcherServlet -->
   <servlet>

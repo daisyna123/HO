@@ -12,7 +12,7 @@
     <!-- springMVC -->
     <!-- 简化配置： (1) 自动注册 DefaultAnnotationHandlerMapping, AnnotationMethodHandlerAdapter
         (2) 提供一系列功能：数据绑定;数字和日期的 format;@NumberFormat;@DateTimeFormat;xml 和 json 的默认读写支持 -->
-    <mvc:annotation-driven />
+    <!--<mvc:annotation-driven />-->
     <!--
         解决@ResponseBody返回中文乱码问题
     -->
