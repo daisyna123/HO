@@ -1,9 +1,5 @@
 package com.bo;
 
-import com.dao.TCSL_DAO_Test;
-import com.vo.TCSL_VO_Test;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +7,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import redis.clients.jedis.Jedis;
-
-import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * Created by zhangtuoyu on 2017/4/27.
@@ -26,7 +18,6 @@ public class TCSL_BO_Test {
     @Autowired
     private RedisTemplate redisTemplate;
 
-
     @Test
     public void testRedis(){
         ValueOperations<String, Object> vOps = redisTemplate.opsForValue();
@@ -34,6 +25,14 @@ public class TCSL_BO_Test {
         if(vOps == null){
             System.out.println("时空");
         }
-        vOps.set("123","456");
+        vOps.set("zn",56);
+        System.out.println( vOps.get("zn"));
     }
+    /*@Test
+    public void testStr(){
+        redisPool.set("lisi","123");
+        System.out.println(redisPool.getStr("lisi"));
+        redisPool.del("lisi");
+        System.out.println(redisPool.getStr("lisi"));
+    }*/
 }
