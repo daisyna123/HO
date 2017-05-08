@@ -126,7 +126,7 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-    <!--redis jar包start -->
+    <!--redis -->
     <dependency>
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-redis</artifactId>
