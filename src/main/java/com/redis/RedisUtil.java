@@ -54,6 +54,9 @@ public class RedisUtil {
 
     /**
      * 多个缓存对象 Hash形式保存 增加/修改
+     * @param key  缓存key
+     * @param map  map的key要修改的mapkey，map的value是修改后的内容
+     * @return
      */
     public int  updateCacheHash(Object key,Map<Object,Object> map){
         if(key == null || map == null){
@@ -104,6 +107,9 @@ public class RedisUtil {
 
     /**
      * 多个缓存对象 List形式保存 删除
+     * @param key 缓存key
+     * @param map map的key是要删除的下标，value是要删除的内容
+     * @return
      */
     public int delCacheList(Object key,Map<Object,Object> map){
         if(key != null && map != null){
