@@ -3,10 +3,7 @@ package com.rest;
 import com.bo.TCSL_BO_Test;
 import com.mq.TCSL_MQ_MessageProducer;
 import com.redis.RedisUtil;
-import com.vo.TCSL_VO_Result;
-import com.vo.TCSL_VO_Test;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -56,13 +53,14 @@ public class TCSL_Rest_Test{
         System.out.println("缓存中删除后的内容"+set2);
         return set2;
     }
-    @RequestMapping("testSendMsg")
+   /* @RequestMapping("testSendMsg")
     @ResponseBody
     public TCSL_VO_Result testSendMessage(){
         TCSL_VO_Result result = new TCSL_VO_Result();
-        messageProducer.sendMessage("123321");
         result.setRet(0);
         result.setContent("发送成功");
+        JSONObject json = JSONObject.fromObject(result);
+        messageProducer.sendMessage(json);
         return result;
-    }
+    }*/
 }

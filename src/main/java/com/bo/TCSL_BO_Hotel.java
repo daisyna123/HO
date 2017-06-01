@@ -1,0 +1,260 @@
+package com.bo;
+import com.po.TCSL_PO_HotelProduct;
+import com.po.TCSL_PO_RoomStatus;
+import com.util.TCSL_UTIL_COMMON;
+import com.util.TCSL_UTIL_RESOURCE;
+import com.vo.*;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.*;
+/**
+ * @DESCRIPTION
+ * @AUTHER administrator zhangna
+ * @create 2017-05-15
+ */
+@Repository
+public class TCSL_BO_Hotel {
+    private Logger logger = Logger.getLogger(TCSL_BO_Hotel.class);
+    /**
+     * 上传酒店信息，酒店产品信息
+     * @param hotelInfo
+     * @return
+     */
+    public TCSL_VO_Result uploadHotelInfo(TCSL_VO_HotelInfo hotelInfo){
+        logger.info("进入uploadHotelInfo()方法");
+        //上传OTA酒店及产品数据
+        TCSL_VO_Result result  = uploadHotelOTA(hotelInfo);
+        //判断是否上传成功
+        if(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS.equals(result.getErrorCode()) && TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS.equals(result.getErrorText()) && result.getReturnCode()==TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS){
+            //if(200 成功 1)
+            //产品创建结果列表
+            List<TCSL_VO_ProductResult> list = ((TCSL_VO_HIResult)result.getData()).getResult();
+            //hotelInfo中products整合为一个map，用于快速查找到产品信息  与顺序有关
+            String[] keys = {"channel","roomTypeCode","ratePlanCode"};
+            List<String> fieldList = Arrays.asList(keys);
+            Map map = TCSL_UTIL_COMMON.mapUtil(hotelInfo.getProducts(),fieldList);
+            //检查上传酒店各项产品的状态
+            Boolean checkResult =  checkProduct(list,map);
+            if(checkResult == false){
+                result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SYSTEM);//500
+                result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SYSTEM);//系统错误
+                result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+                return result;
+            }
+        }else{
+            return result;
+        }
+        return result;
+    }
+
+    /**
+     * 检查上传酒店各项产品的状态
+     * 说明：对创建成功,数据库中不存在的进行添加;
+     *      对产品上传重复,数据库中存在的产品进行信息覆盖
+     * @param list 酒店上传产品结果列表
+     * @param map 酒店上传产品信息列表
+     * @return
+     */
+    public Boolean checkProduct(List<TCSL_VO_ProductResult> list,Map<String,TCSL_VO_HotelProduct> map){
+        //数据库中所有产品列表
+        List<TCSL_PO_HotelProduct> dbHotelProducts = new ArrayList<TCSL_PO_HotelProduct>();
+        //1.查询数据库所有产品 调用dao层queryProducts()
+        //TODO
+        //test start
+        TCSL_PO_HotelProduct hotelProduct = new TCSL_PO_HotelProduct();
+        hotelProduct.setId("1");
+        hotelProduct.setHotelName("天财商龙");
+        hotelProduct.setPrice("123");
+        TCSL_PO_HotelProduct hotelProduct1 = new TCSL_PO_HotelProduct();
+        hotelProduct1.setId("2");
+        hotelProduct1.setHotelName("测试1");
+        hotelProduct1.setPrice("123");
+        TCSL_PO_HotelProduct hotelProduct2 = new TCSL_PO_HotelProduct();
+        hotelProduct2.setId("3");
+        hotelProduct2.setHotelName("测试2");
+        hotelProduct2.setPrice("123");
+        dbHotelProducts.add(hotelProduct);
+        dbHotelProducts.add(hotelProduct1);
+        dbHotelProducts.add(hotelProduct2);
+        //test end
+
+        //2.将数据库中产品信息整合为map，用于快速获取， 与顺序有关
+        String[] keys = {"channel","roomTypeCode","ratePlanCode"};
+        List<String> fieldList = Arrays.asList(keys);
+        Map dbHotelProductMap = TCSL_UTIL_COMMON.mapUtil(dbHotelProducts,fieldList);
+        //增加或修改数据库
+        for(int j=0;j<list.size();j++){
+            String key = "";
+            //3.产品创建成功 isSucess=true,dbHotelProductMap里面没有,将产品添加到数据库
+            if(list.get(j).getSuccess() == true){
+                key = createKey(list.get(j).getChannel(),list.get(j).getRoomTypeCode(),list.get(j).getRatePlanCode());
+                TCSL_PO_HotelProduct dbProduct = (TCSL_PO_HotelProduct)dbHotelProductMap.get(key);
+                //数据库不存在该产品，添加到数据库
+                if(dbProduct == null) {
+                    //取到要添加的产品数据
+                    TCSL_VO_HotelProduct newProduct = map.get(key);
+                    //调用dao层addProduct(newProduct)传入参数newProduct
+                    //TODO
+                }
+            }
+            //4.isSucess=false 并且 Code=101(产品已存在) 更新数据库中产品信息
+            if(list.get(j).getSuccess() == false && "101".equals(list.get(j).getCode())){
+                key = createKey(list.get(j).getChannel(), list.get(j).getRoomTypeCode(),list.get(j).getRatePlanCode());
+                //根据键将值放入到数据库
+                TCSL_PO_HotelProduct dbProduct = (TCSL_PO_HotelProduct) dbHotelProductMap.get(key);
+                TCSL_VO_HotelProduct newProduct = newProduct = map.get(key);
+                //如果数据库存在，则更新数据库
+                if(dbProduct != null){
+                    //取到要更新的vohotelproduct数据
+
+                    //调用dao层updateProduct(newProduct)传入参数newProduct
+                    //TODO
+                }else{
+                    //调用dao层addProduct(newProduct)传入参数newProduct
+                    //TODO
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 上传OTA酒店及产品信息
+     * 说明：将数据转换成OTA所需xml形式上传
+     * @param hotelInfo
+     * @return
+     */
+    public TCSL_VO_Result uploadHotelOTA(TCSL_VO_HotelInfo hotelInfo){
+        TCSL_VO_Result result = new TCSL_VO_Result();
+        TCSL_VO_HIResult hiResult = new TCSL_VO_HIResult(); //创建酒店结果
+        List<TCSL_VO_ProductResult> list = new ArrayList<TCSL_VO_ProductResult>(); //创建产品结果列表
+        //对hotelInfo中products进行参数有效性校验
+        if(hotelInfo.getProducts()==null || hotelInfo.getProducts().size() == 0){
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不完整
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+            return result;
+        }
+        //将对象TCSL_VO_HotelInfo中数据转换成xml格式
+        /**
+         * 1.参数校验products中每个TCSL_VO_HotelProduct进行roomTypeCode,ratePlanCode,channel有效性校验
+         * 2.把有效的TCSL_VO_HotelProduct拼进xml中
+         */
+        //向后台OTA发送soap请求
+        //OTA平台返回值是一个XML，解析封装成一个个TCSL_VO_ProductResult
+        //TODO
+        //用日志把酒店代码、房型代码，房型名称，渠道打印，  打印result
+        //test start
+        TCSL_VO_ProductResult productResult = new TCSL_VO_ProductResult();
+        TCSL_VO_ProductResult productResult1 = new TCSL_VO_ProductResult();
+        //假数据
+        productResult.setChannel("CTRIP");
+        productResult.setCode("101");
+        productResult.setMessage("产品已存在");
+        productResult.setHotelCode("HY2403");
+        productResult.setSuccess(false);
+        productResult.setRoomTypeCode("BT");
+        productResult.setRatePlanCode("XCBAR");
+        productResult1.setChannel("CTRIP");
+        productResult1.setHotelCode("HY2403");
+        productResult1.setSuccess(true);
+        productResult1.setRoomTypeCode("BT");
+        productResult1.setRatePlanCode("XCLTP");
+
+        list.add(productResult1);
+        list.add(productResult);
+        //add到list
+        hiResult.setResult(list);
+        result.setData(hiResult);
+
+        //假数据
+        result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
+        result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);//200
+        result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);//1
+        //test end
+        return result;
+    }
+    /**
+     * 创建key，由channel、hotelCode、roomTypeCode、ratePlanCode组合
+     * @param channel
+     * @param roomTypeCode
+     * @param ratePlanCode
+     * @return
+     */
+    public String createKey(String channel,String roomTypeCode,String ratePlanCode){
+        //拼接key字符串
+        StringBuilder key = new StringBuilder();
+        key.append(channel);
+        key.append(roomTypeCode);
+        key.append(ratePlanCode);
+        //去空格str = .replaceAll("\\s*", "");可以替换大部分空白字符， 不限于空格;\s 可以匹配空格、制表符、换页符等空白字符的其中任意一个。
+        String keys = key.toString();
+        keys.replaceAll("\\s*","");
+        return  keys;
+    }
+
+    /**
+     * 上传酒店房态逻辑处理
+     * @param roomStatus 房态信息
+     * @return
+     */
+    public TCSL_VO_Result uploadRoomStatus(TCSL_VO_RoomStatus roomStatus){
+        TCSL_VO_Result result = new TCSL_VO_Result();
+        //对roomStatus中projects房态列表有效性验证
+        if(roomStatus.getProjects() == null || roomStatus.getProjects().size()==0){
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不完整
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+            logger.info("上传的房态信息参数不完整！");
+            return  result;
+        }
+        //产品有效性校验
+        List<TCSL_VO_RSItem> validList = new ArrayList<TCSL_VO_RSItem>(); //有效产品列表
+        for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
+            //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
+            ArrayList param = new ArrayList();
+            param.add(obj.getDate());
+            param.add(obj.getDestinationSystemCodes());
+            param.add(obj.getInvTypeCode());
+            param.add(obj.getRatePlanCode());
+            param.add(obj.getStatus());
+            logger.debug("房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
+            if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
+                continue;
+            }
+            validList.add(obj);
+        }
+        //将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
+        //TODO
+        List<TCSL_PO_RoomStatus> dbRoomStatus = new ArrayList<TCSL_PO_RoomStatus>();
+        //查询数据库从当天起向后90天的房态数据调用dao层的queryRS()
+        //TODO
+
+        //将数据转换成OTA所需xml形式上传(xml格式 调用uploadRSOTA()
+        result = uploadRSOTA(dbRoomStatus);
+        return  result;
+    }
+
+    /**
+     * 将数据转换成OTA所需xml形式上传(xml格式参照《酒店O2O线上程序涉及接口》中样例
+     * 说明：1.将对象TCSL_PO_RoomStatus中数据转换成xml格式
+     *      2.后台向OTA发送soap请求
+     *      3.将返回xml格式的数据，整合成对象TCSL_VO_Result
+     * @param po_roomStatuses
+     * @return
+     */
+    public TCSL_VO_Result  uploadRSOTA(List<TCSL_PO_RoomStatus> po_roomStatuses){
+        TCSL_VO_Result result = new TCSL_VO_Result();
+        //TODO
+       /* 1.将对象TCSL_PO_RoomStatus中数据转换成xml格式
+        2.后台向OTA发送soap请求
+        3.将返回xml格式的数据，整合成对象TCSL_VO_Result*/
+        //日志打印result
+        return result;
+    }
+}

@@ -1,7 +1,4 @@
-package com.mq;/**
- * Created by administrator on 2017-05-05.
- */
-
+package com.mq;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 
