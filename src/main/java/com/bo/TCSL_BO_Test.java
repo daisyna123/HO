@@ -12,11 +12,11 @@ import java.util.List;
  */
 @Repository
 public class TCSL_BO_Test {
-    @Resource
+   /* @Resource
     TCSL_DAO_Test tcslDaoTest;
 
     public List<TCSL_VO_Test> getUser(){
         List<TCSL_VO_Test> users = tcslDaoTest.getAll();
         return users;
-    }
+    }*/
 }
