@@ -1,7 +1,6 @@
 package com.dao;
 
-import com.vo.TCSL_VO_Test;
-
+import com.po.TCSL_PO_Test;
 import java.util.List;
 
 /**
@@ -10,5 +9,8 @@ import java.util.List;
 public interface TCSL_DAO_Test {
 
     //查询测试表o2o_test所有数据
-    public List<TCSL_VO_Test> getAll();
+    public List<TCSL_PO_Test> getAll();
+
+    //插入数据到测试表o2o_test
+    public void save(TCSL_PO_Test tcslPoTest);
 }

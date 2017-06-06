@@ -1,10 +1,15 @@
 package com.rest;
 
 import com.bo.TCSL_BO_Test;
+import com.dao.TCSL_DAO_Test;
 import com.mq.TCSL_MQ_MessageProducer;
+import com.po.TCSL_PO_Test;
 import com.redis.RedisUtil;
+import com.vo.TCSL_VO_Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -21,6 +26,9 @@ public class TCSL_Rest_Test{
     TCSL_BO_Test tcslBoTest;
     @Resource(name = "redisTemplate")
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private TCSL_BO_Test tcslDaoTest;
 
     @Resource
     private RedisUtil redisUtil;
@@ -63,4 +71,25 @@ public class TCSL_Rest_Test{
         messageProducer.sendMessage(json);
         return result;
     }*/
+    @RequestMapping("/test")
+    @ResponseBody
+    public TCSL_VO_Result test(){
+        TCSL_PO_Test xiaobai = new TCSL_PO_Test();
+        xiaobai.setNAME("小白");
+        xiaobai.setADDRESS("鞍山西道");
+        xiaobai.setAGE(12);
+        //插入第一条数据
+        tcslBoTest.save(xiaobai);
+        TCSL_PO_Test bai = new TCSL_PO_Test();
+        bai.setNAME("一坨羊毛");
+        bai.setADDRESS("山羊村");
+        bai.setAGE(12);
+        //插入第二条数据
+        tcslBoTest.save(bai);
+        //throw new RuntimeException("kdjf");
+        List<TCSL_PO_Test> list = tcslBoTest.getUser();
+       TCSL_VO_Result result = new TCSL_VO_Result();
+       result.setData(list);
+       return result;
+   }
 }

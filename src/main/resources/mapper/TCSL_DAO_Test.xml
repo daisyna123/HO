@@ -3,7 +3,16 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 命名空间mapper：com.model.professional -->
 <mapper namespace="com.dao.TCSL_DAO_Test">
-    <select id="getAll" resultType="com.vo.TCSL_VO_Test">
-        SELECT * from o2o_test
+    <select id="getAll" resultType="com.po.TCSL_PO_Test">
+        SELECT * from TCSL_USER
     </select>
+    <insert id="save">
+        INSERT INTO TCSL_USER (
+        UNAME,
+        AGE,
+        ADDRESS
+        )
+        VALUES
+        (#{NAME}, #{AGE}, #{ADDRESS})
+    </insert>
 </mapper>

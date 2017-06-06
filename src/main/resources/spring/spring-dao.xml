@@ -40,7 +40,7 @@
         <!-- 配置 MyBatis 全局配置文件：mybatis-config.xml -->
         <property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
         <!-- 扫描 entity 包并且使用别名 -->
-        <property name="typeAliasesPackage" value="com.po.mysql" />
+        <property name="typeAliasesPackage" value="com.po" />
         <!-- 扫描 sql 配置文件：mapper 需要的 xml 文件 -->
         <property name="mapperLocations" value="classpath:mapper/*.xml" />
     </bean>

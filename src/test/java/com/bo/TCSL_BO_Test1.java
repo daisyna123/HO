@@ -1,4 +1,6 @@
 package com.bo;
+import com.dao.TCSL_DAO_Test;
+import com.po.TCSL_PO_Test;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_XMLData;
 import com.vo.TCSL_VO_HotelInfo;
@@ -18,6 +20,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -33,6 +36,9 @@ public class TCSL_BO_Test1 {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private TCSL_DAO_Test tcslDaoTest;
 
     @Test
     public void testRedis(){
