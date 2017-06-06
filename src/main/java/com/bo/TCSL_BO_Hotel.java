@@ -150,15 +150,8 @@ public class TCSL_BO_Hotel {
          * 2.判断TCSL_VO_HotelProduct产品信息是否在产品表中，将不在产品表中的产品组成待上传产品列表
          * 3.把待上传产品列表组合成xml
          */
-        //读取ota.properties配置文件中的url，nameSpace，soapAction的值
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ota.properties");
-        Properties p = new Properties();
-        try {
-            //读ota.properties文件
-            p.load(inputStream);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
+        //调用工具类TCSL_UTIL_COMMON.getproperties()方法读取ota.properties配置文件中的url，nameSpace，soapAction的值
+        Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
         //获取ota.properties中上传酒店及产品的url路径
         String url=p.getProperty("ota_uploadHotelInfo_url");
         //获取ota.properties中上传酒店及产品的soapAction路径

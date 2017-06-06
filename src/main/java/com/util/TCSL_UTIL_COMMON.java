@@ -1,11 +1,14 @@
 package com.util;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @DESCRIPTION
@@ -63,5 +66,21 @@ public class TCSL_UTIL_COMMON {
             }
         }
         return false;
+    }
+
+    /**
+     * 在类中读取fileName配置文件中的值,
+     * @param fileName 文件名必须是properties为后缀的
+     * @return
+     */
+    public static Properties getProperties(String fileName){
+        InputStream inputStream = TCSL_UTIL_COMMON.class.getClassLoader().getResourceAsStream(fileName);
+        Properties p = new Properties();
+        try {
+            p.load(inputStream);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return p;
     }
 }

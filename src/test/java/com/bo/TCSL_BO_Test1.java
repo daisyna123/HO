@@ -1,4 +1,5 @@
 package com.bo;
+import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_XMLData;
 import com.vo.TCSL_VO_HotelInfo;
 import com.vo.TCSL_VO_Result;
@@ -146,13 +147,15 @@ public class TCSL_BO_Test1 {
      */
     @Test
     public void testReadpropeties(){
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ota.properties");
+     /*   InputStream inputStream = TCSL_BO_Test1.class.getClassLoader().getResourceAsStream("ota.properties");
         Properties p = new Properties();
         try {
             p.load(inputStream);
         } catch (IOException e1) {
             e1.printStackTrace();
-        }
+        }*/
+//        调用工具类TCSL_UTIL_COMMON.getproperties()方法读取ota.properties配置文件中的url，nameSpace，soapAction的值
+        Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
         System.out.println("url:"+p.getProperty("ota_uploadHotelInfo_url")+",soapAction:"+p.getProperty("ota_uploadHotelInfo_soapAction"));
     }
 }
