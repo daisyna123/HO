@@ -1,6 +1,9 @@
 package com.bo;
 import com.util.TCSL_UTIL_XMLData;
 import com.vo.TCSL_VO_HotelInfo;
+import com.vo.TCSL_VO_Result;
+import com.xml.PmsHotelInfoRS;
+import com.xml.Translator;
 import org.apache.commons.httpclient.HttpClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +17,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
+
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -92,13 +97,18 @@ public class TCSL_BO_Test1 {
      */
     @Test
     public void testxml(){
+        TCSL_VO_Result dsfd = new TCSL_VO_Result();
+
         //测试bean转xml
-        TCSL_VO_HotelInfo info = new TCSL_VO_HotelInfo();
+       /* TCSL_VO_HotelInfo info = new TCSL_VO_HotelInfo();
         info.setAddress("天津");
         info.setEmail("123@qq.com");
         info.setHotelName("天财商龙");
-        String param = param = TCSL_UTIL_XMLData.beanToString(info);
-        System.out.println(param);
+        String param = TCSL_UTIL_XMLData.beanToString(info);
+        System.out.println(param);*/
+        Translator translator = new Translator();
+        translator.setWordKey("name");
+        String param = TCSL_UTIL_XMLData.beanToString(translator);
         //测试结束
         String url = "http://fy.webxml.com.cn/webservices/EnglishChinese.asmx";
         String action = "http://WebXml.com.cn/Translator";
@@ -106,10 +116,43 @@ public class TCSL_BO_Test1 {
        // String param = "name";
         String actionParam = "PmsHotelInfoRQ";
         String op = "PMSBaseHotelInfos";
-        String result = TCSL_UTIL_XMLData.getSoapXMLResponse(
-                url, action, nameSpace,actionParam,op,param);
+        String result = TCSL_UTIL_XMLData.getSoapXMLResponse(url, action, nameSpace,actionParam,op,param);
             System.out.println("result=================="+result);
-//            responce = TCSL_UTIL_XMLData.converyToJavaBean(result,TCSL_VO_HotelInfo.class);
-//            System.out.println(responce.toString());
+            //测试soap响应xml取body转换成bean
+        /*String result ="<PmsHotelInfoRS xmlns=\"http://www.opentravel.org/OTA/2003/05\">\n" +
+                "         <PMSHotelMappingResults>\n" +
+                "            <PMSHotelMappingResult>\n" +
+                "               <HotelCode>?</HotelCode>\n" +
+                "               <IsSuccess>false</IsSuccess>\n" +
+                "               <ErrorCode>109</ErrorCode>\n" +
+                "               <Message>参数有误，酒店组代码不存在;</Message>\n" +
+                "            </PMSHotelMappingResult>\n" +
+                "            <PMSHotelMappingResult>\n" +
+                "               <HotelCode>?</HotelCode>\n" +
+                "               <IsSuccess>false</IsSuccess>\n" +
+                "               <ErrorCode>109</ErrorCode>\n" +
+                "               <Message>未获取到需要创建的酒店产品;</Message>\n" +
+                "            </PMSHotelMappingResult>\n" +
+                "         </PMSHotelMappingResults>\n" +
+                "      </PmsHotelInfoRS>\n";
+        //PmsHotelInfoRS responce = TCSL_UTIL_XMLData.converyToJavaBean(result, PmsHotelInfoRS.class);
+        PmsHotelInfoRS responce = TCSL_UTIL_XMLData.xmlTojavaBean(PmsHotelInfoRS.class,result);
+        System.out.println(responce.getPmsHotelMappingResults().getPmsHotelMappingResultList().get(0).getMessage());
+        System.out.println(responce.getPmsHotelMappingResults().getPmsHotelMappingResultList().get(0).getErrorCode());*/
+    }
+
+    /**
+     * 测试在Java中读取properties配置文件中的值
+     */
+    @Test
+    public void testReadpropeties(){
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ota.properties");
+        Properties p = new Properties();
+        try {
+            p.load(inputStream);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        System.out.println("url:"+p.getProperty("ota_uploadHotelInfo_url")+",soapAction:"+p.getProperty("ota_uploadHotelInfo_soapAction"));
     }
 }

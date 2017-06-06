@@ -46,13 +46,13 @@ public class TCSL_REST_Hotel {
         param.add(hotelInfo.getHotelCode());
         param.add(hotelInfo.getHotelName());
         if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
-                result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
-                result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
-                result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
-                logger.info("酒店信息参数不全！");
-                return result;
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+            logger.info("酒店信息参数不全！");
+            return result;
         }
-       result = boHotel.uploadHotelInfo(hotelInfo);
+        result = boHotel.uploadHotelInfo(hotelInfo);
         return result;
     }
 

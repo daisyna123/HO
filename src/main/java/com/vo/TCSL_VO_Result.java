@@ -5,20 +5,8 @@ package com.vo;
  * Created by zhangtuoyu on 2017/4/27.
  */
 public class TCSL_VO_Result {
-    /*
-     * 200:"成功"
-     * 400："参数不全"
-     * 401："认证失败"
-     * 500:"系统错误"
-     */
+
    private String errorCode;
-    /*
-     * 200:"成功"
-     * 400："参数不全"
-     * 401："认证失败"
-     * 500:"系统错误"
-     * 与errorCode配合使用
-     */
    private String errorText;
    /*
     * 1:成功

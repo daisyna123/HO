@@ -3,13 +3,16 @@ import com.po.TCSL_PO_HotelProduct;
 import com.po.TCSL_PO_RoomStatus;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
+import com.util.TCSL_UTIL_XMLData;
 import com.vo.*;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+
+import com.xml.PMSHotelMappingResult;
+import com.xml.PmsHotelInfoRS;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 /**
@@ -26,7 +29,7 @@ public class TCSL_BO_Hotel {
      * @return
      */
     public TCSL_VO_Result uploadHotelInfo(TCSL_VO_HotelInfo hotelInfo){
-        logger.info("进入uploadHotelInfo()方法");
+        logger.info("进入uploadHotelInfo()上传酒店信息产品信息方法");
         //上传OTA酒店及产品数据
         TCSL_VO_Result result  = uploadHotelOTA(hotelInfo);
         //判断是否上传成功
@@ -131,8 +134,8 @@ public class TCSL_BO_Hotel {
      */
     public TCSL_VO_Result uploadHotelOTA(TCSL_VO_HotelInfo hotelInfo){
         TCSL_VO_Result result = new TCSL_VO_Result();
-        TCSL_VO_HIResult hiResult = new TCSL_VO_HIResult(); //创建酒店结果
-        List<TCSL_VO_ProductResult> list = new ArrayList<TCSL_VO_ProductResult>(); //创建产品结果列表
+        TCSL_VO_HIResult hiResult = new TCSL_VO_HIResult(); //创建酒店产品结果
+        List<TCSL_VO_ProductResult> list = new ArrayList<TCSL_VO_ProductResult>(); //产品创建结果列表
         //对hotelInfo中products进行参数有效性校验
         if(hotelInfo.getProducts()==null || hotelInfo.getProducts().size() == 0){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
@@ -141,42 +144,80 @@ public class TCSL_BO_Hotel {
             return result;
         }
         //将对象TCSL_VO_HotelInfo中数据转换成xml格式
+        //TODO
         /**
          * 1.参数校验products中每个TCSL_VO_HotelProduct进行roomTypeCode,ratePlanCode,channel有效性校验
-         * 2.把有效的TCSL_VO_HotelProduct拼进xml中
+         * 2.判断TCSL_VO_HotelProduct产品信息是否在产品表中，将不在产品表中的产品组成待上传产品列表
+         * 3.把待上传产品列表组合成xml
          */
+        //读取ota.properties配置文件中的url，nameSpace，soapAction的值
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ota.properties");
+        Properties p = new Properties();
+        try {
+            //读ota.properties文件
+            p.load(inputStream);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        //获取ota.properties中上传酒店及产品的url路径
+        String url=p.getProperty("ota_uploadHotelInfo_url");
+        //获取ota.properties中上传酒店及产品的soapAction路径
+        String soapAction=p.getProperty("ota_uploadHotelInfo_soapAction");
+        // //获取ota.properties中上传酒店及产品的命名空间路径
+        String nameSpace=p.getProperty("ota_uploadHotelInfo_nameSpace");
         //向后台OTA发送soap请求
-        //OTA平台返回值是一个XML，解析封装成一个个TCSL_VO_ProductResult
-        //TODO
-        //用日志把酒店代码、房型代码，房型名称，渠道打印，  打印result
-        //test start
-        TCSL_VO_ProductResult productResult = new TCSL_VO_ProductResult();
-        TCSL_VO_ProductResult productResult1 = new TCSL_VO_ProductResult();
-        //假数据
-        productResult.setChannel("CTRIP");
-        productResult.setCode("101");
-        productResult.setMessage("产品已存在");
-        productResult.setHotelCode("HY2403");
-        productResult.setSuccess(false);
-        productResult.setRoomTypeCode("BT");
-        productResult.setRatePlanCode("XCBAR");
-        productResult1.setChannel("CTRIP");
-        productResult1.setHotelCode("HY2403");
-        productResult1.setSuccess(true);
-        productResult1.setRoomTypeCode("BT");
-        productResult1.setRatePlanCode("XCLTP");
+        String soapResponse = TCSL_UTIL_XMLData.getSoapXMLResponse(url,soapAction,nameSpace,"","","");
+        //OTA平台返回值是一个XML，解析封装成一个List<TCSL_VO_ProductResult>
+        PmsHotelInfoRS responce = TCSL_UTIL_XMLData.xmlTojavaBean(PmsHotelInfoRS.class,soapResponse);
+        //解析soap请求响应(产品创建结果)
+        List<PMSHotelMappingResult> pmsHotelMappingResultList = responce.getPmsHotelMappingResults().getPmsHotelMappingResultList();
+        for(int i = 0;i < pmsHotelMappingResultList.size() ;i++ ){
+            TCSL_VO_ProductResult productResult = new TCSL_VO_ProductResult(); //产品创建结果
+            productResult.setMessage(pmsHotelMappingResultList.get(i).getMessage());//错误描述
+            productResult.setRatePlanCode(pmsHotelMappingResultList.get(i).getRatePlanCode());//厂商线上活动代码
+            productResult.setRoomTypeCode(pmsHotelMappingResultList.get(i).getRoomTypeCode());//厂商房型代码
+            productResult.setSuccess(Boolean.parseBoolean(pmsHotelMappingResultList.get(i).getIsSuccess()));//创建结果
+            productResult.setHotelCode(pmsHotelMappingResultList.get(i).getHotelCode());//厂商酒店代码
+            productResult.setCode(pmsHotelMappingResultList.get(i).getErrorCode());//错误代码
+            productResult.setChannel(pmsHotelMappingResultList.get(i).getChannel());//渠道
 
-        list.add(productResult1);
-        list.add(productResult);
-        //add到list
+            //用日志把酒店代码、房型代码，房型名称，渠道打印，  打印result
+            logger.debug("酒店代码："+pmsHotelMappingResultList.get(i).getHotelCode()+" 房型代码："+pmsHotelMappingResultList.get(i).getRoomTypeCode()
+            +" 渠道名称："+pmsHotelMappingResultList.get(i).getChannel());
+            //将TCSL_VO_ProductResult添加到List<PMSHotelMappingResult>
+            list.add(productResult);
+
+            //判断产品创建是否失败
+            String productStatus = pmsHotelMappingResultList.get(i).getIsSuccess();
+            if("false".equals(productStatus)){
+                if(!"101".equals(pmsHotelMappingResultList.get(i).getErrorCode())){ //失败原因不是产品已存在
+                    /**
+                     * 将该记录保存到产品创建失败记录表中
+                     */
+                    //TODO
+                }
+            }else{ //产品参加线上活动成功
+                /**
+                 * 删除产品创建记录表中 对应的 错误信息
+                 */
+                //TODO
+            }
+        }
         hiResult.setResult(list);
         result.setData(hiResult);
+        //判断产品创建成功/失败
+        /**
+         * 1.遍历待上传产品列表
+         * 2.判断每个产品是否在产品创建失败记录表中有记录
+         * 3.有错误记录的 在result中放错误信息；没有错误记录的产品 保存到产品表中
+         * 4.所有待上传产品都遍历完，errorCode则说明所有产品都创建成功
+         */
 
-        //假数据
-        result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
-        result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);//200
-        result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);//1
-        //test end
+//      if(result.getErrorCode() == null || "".equals(result.getErrorCode())) {
+//          result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
+//          result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);//200
+//          result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);//1
+//      }
         return result;
     }
     /**
@@ -197,6 +238,8 @@ public class TCSL_BO_Hotel {
         keys.replaceAll("\\s*","");
         return  keys;
     }
+
+
 
     /**
      * 上传酒店房态逻辑处理
@@ -254,6 +297,13 @@ public class TCSL_BO_Hotel {
        /* 1.将对象TCSL_PO_RoomStatus中数据转换成xml格式
         2.后台向OTA发送soap请求
         3.将返回xml格式的数据，整合成对象TCSL_VO_Result*/
+        String url="http://124.127.242.67/AutoMappingWS/GetPmsInfo.asmx";
+        String soapAction="http://htng.org/2014B/HTNG_ARIAndReservationPushService#GetPMSHotelInfo";
+        String nameSpace="xmlns=\"http://www.opentravel.org/OTA/2003/05\"";
+        //向后台OTA发送soap请求
+        String soapResponse = TCSL_UTIL_XMLData.getSoapXMLResponse(url,soapAction,nameSpace,"","","");
+        //将soapResponse转为javabean
+
         //日志打印result
         return result;
     }
