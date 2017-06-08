@@ -8,6 +8,8 @@ import com.vo.*;
 
 import com.xml.PMSHotelMappingResult;
 import com.xml.PmsHotelInfoRS;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMFactory;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -143,8 +145,12 @@ public class TCSL_BO_Hotel {
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
             return result;
         }
-        //将对象TCSL_VO_HotelInfo中数据转换成xml格式
-        //TODO
+        /**
+         * 将对象TCSL_VO_HotelInfo中数据转换成xml格式
+         */
+
+
+
         /**
          * 1.参数校验products中每个TCSL_VO_HotelProduct进行roomTypeCode,ratePlanCode,channel有效性校验
          * 2.判断TCSL_VO_HotelProduct产品信息是否在产品表中，将不在产品表中的产品组成待上传产品列表
@@ -159,7 +165,7 @@ public class TCSL_BO_Hotel {
         // //获取ota.properties中上传酒店及产品的命名空间路径
         String nameSpace=p.getProperty("ota_uploadHotelInfo_nameSpace");
         //向后台OTA发送soap请求
-        String soapResponse = TCSL_UTIL_XMLData.getSoapXMLResponse(url,soapAction,nameSpace,"","","");
+        String soapResponse = TCSL_UTIL_XMLData.sendSoap(url,soapAction,null);
         //OTA平台返回值是一个XML，解析封装成一个List<TCSL_VO_ProductResult>
         PmsHotelInfoRS responce = TCSL_UTIL_XMLData.xmlTojavaBean(PmsHotelInfoRS.class,soapResponse);
         //解析soap请求响应(产品创建结果)
@@ -294,7 +300,7 @@ public class TCSL_BO_Hotel {
         String soapAction="http://htng.org/2014B/HTNG_ARIAndReservationPushService#GetPMSHotelInfo";
         String nameSpace="xmlns=\"http://www.opentravel.org/OTA/2003/05\"";
         //向后台OTA发送soap请求
-        String soapResponse = TCSL_UTIL_XMLData.getSoapXMLResponse(url,soapAction,nameSpace,"","","");
+        String soapResponse = TCSL_UTIL_XMLData.sendSoap(url,soapAction,null);
         //将soapResponse转为javabean
 
         //日志打印result

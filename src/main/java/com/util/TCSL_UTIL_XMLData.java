@@ -42,42 +42,26 @@ import java.util.List;
 public class TCSL_UTIL_XMLData {
     private static Logger logger = Logger.getLogger(TCSL_UTIL_XMLData.class);
     /**
-     * 发送soap请求，获得soap响应
-     * @param URL  接口地址
-     * @param action  SOAPAction
-     * @param nameSpace 参数xml的命名空间
-     * @param actionParam 开始标签名
-     * @param op  第二级标签名
-     * @param param
+     *
+     * @param URL soap 请求路径
+     * @param soapAction soapAction
+     * @param data soap请求数据
      * @return
      */
-    public static  String getSoapXMLResponse(String URL,String action,String nameSpace,String actionParam,String op,String param){
+    public static  String sendSoap(String URL,String soapAction,OMElement data){
        logger.info("start sending soap...");
         String resultStr = null;
         try {
             //axis2创建一个serviceClient
-            RPCServiceClient serviceClient = new RPCServiceClient();
+            ServiceClient serviceClient = new ServiceClient();
             Options option = new Options();
             //设置SOAPAction
-            option.setAction(action);
+            option.setAction(soapAction);
             // 指定调用WebService的URL
             EndpointReference targetEPR = new EndpointReference(URL);
             option.setTo(targetEPR);
             serviceClient.setOptions(option);
-            //创建response SOAP包。
-            OMFactory factory = OMAbstractFactory.getOMFactory();
-            // OMNamespace指定此SOAP文档名称空间。
-            OMNamespace omNamespace = factory.createOMNamespace(nameSpace,"");
-            //创建OMElement元素 将omNamespace作为命名空间
-           /* OMElement data = factory.createOMElement(actionParam,omNamespace);
-            OMElement inner = factory.createOMElement(op,omNamespace);
-            inner.setText(param);
-            data.addChild(inner);*/
-            OMElement data = factory.createOMElement(param,omNamespace);
-            //发送数据返回结果
             OMElement result = serviceClient.sendReceive(data);
-            //StringEscapeUtils.unescapeXml用于转换为xml格式的字符串
-            //resultStr = StringEscapeUtils.unescapeXml(result.getFirstElement().getText());
             resultStr = result.toString();
             logger.info("send soap success..");
         } catch (AxisFault axisFault) {
