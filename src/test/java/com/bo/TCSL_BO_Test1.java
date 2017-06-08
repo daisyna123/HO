@@ -7,7 +7,16 @@ import com.vo.TCSL_VO_HotelInfo;
 import com.vo.TCSL_VO_Result;
 import com.xml.PmsHotelInfoRS;
 import com.xml.Translator;
+import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.om.OMNamespace;
+import org.apache.axis2.AxisFault;
+import org.apache.axis2.addressing.EndpointReference;
+import org.apache.axis2.client.Options;
+import org.apache.axis2.client.ServiceClient;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.ibatis.mapping.ParameterMode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +46,6 @@ public class TCSL_BO_Test1 {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    @Autowired
-    private TCSL_DAO_Test tcslDaoTest;
 
     @Test
     public void testRedis(){
@@ -123,8 +130,8 @@ public class TCSL_BO_Test1 {
        // String param = "name";
         String actionParam = "PmsHotelInfoRQ";
         String op = "PMSBaseHotelInfos";
-        String result = TCSL_UTIL_XMLData.getSoapXMLResponse(url, action, nameSpace,actionParam,op,param);
-            System.out.println("result=================="+result);
+//        String result = TCSL_UTIL_XMLData.getSoapXMLResponse(url, action, nameSpace,actionParam,op,param);
+//            System.out.println("result=================="+result);
             //测试soap响应xml取body转换成bean
         /*String result ="<PmsHotelInfoRS xmlns=\"http://www.opentravel.org/OTA/2003/05\">\n" +
                 "         <PMSHotelMappingResults>\n" +
@@ -163,5 +170,18 @@ public class TCSL_BO_Test1 {
 //        调用工具类TCSL_UTIL_COMMON.getproperties()方法读取ota.properties配置文件中的url，nameSpace，soapAction的值
         Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
         System.out.println("url:"+p.getProperty("ota_uploadHotelInfo_url")+",soapAction:"+p.getProperty("ota_uploadHotelInfo_soapAction"));
+    }
+    @Test
+    public void testBeanToXml(){
+        OMFactory factory = OMAbstractFactory.getOMFactory();
+        OMNamespace webNamespace = factory.createOMNamespace("http://WebXml.com.cn/","web");
+        OMElement transTag = factory.createOMElement("Translator",webNamespace);
+        OMElement wordKeyTag = factory.createOMElement("wordKey",webNamespace);
+        wordKeyTag.setText("name");
+        transTag.addChild(wordKeyTag);
+        System.out.println("请求参数------"+transTag);
+        String url = "http://fy.webxml.com.cn/webservices/EnglishChinese.asmx";
+        String soapAction = "http://WebXml.com.cn/Translator";
+        TCSL_UTIL_XMLData.sendSoap(url,soapAction,transTag);
     }
 }
