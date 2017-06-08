@@ -6,34 +6,23 @@ import java.util.List;
  * @AUTHER administrator zhangna
  * @create 2017-05-15
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "HotelInfo",namespace = "http://www.opentravel.org/OTA/2003/05")
-@XmlType(propOrder = { })
 public class TCSL_VO_HotelInfo {
     //PMS酒店代码
-    @XmlElement
     private String hotelCode;
     //PMS酒店名称
-    @XmlElement
     private String hotelName;
     //酒店电话号码
-    @XmlElement
     private String telephone;
     //酒店地址
-    @XmlElement
     private String address;
     //酒店邮箱
-    @XmlElement
     private String email;
     //城市
-    @XmlElement
     private String hotelCityName;
     //省份
-    @XmlElement
     private String provinceCode;
 
     //酒店产品数组
-    @XmlElement(name="products")
     private List<TCSL_VO_HotelProduct> products;
 
     public String getHotelCode() {

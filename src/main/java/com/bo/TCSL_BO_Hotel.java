@@ -306,4 +306,19 @@ public class TCSL_BO_Hotel {
         //日志打印result
         return result;
     }
+
+    /**
+     * 上传房价逻辑部分
+     * @param roomPrice
+     * @return
+     */
+    public TCSL_VO_Result uploadRoomPrice(TCSL_VO_RoomPrice roomPrice){
+        TCSL_VO_Result result = new TCSL_VO_Result();
+        //酒店代码
+        String hotelCode = roomPrice.getHotelCode();
+        //酒店价格方案列表
+        List<TCSL_VO_RPItem> rpItems =  roomPrice.getProjects();
+        //TODO
+        return result;
+    }
 }
