@@ -1,4 +1,7 @@
 package com.vo;
+
+import com.xml.TCSL_XML_PMSHotelMappingResult;
+
 /**
  * @DESCRIPTION
  * @AUTHER administrator zhangna
@@ -28,6 +31,16 @@ public class TCSL_VO_ProductResult {
     private String code;
     //产品信息返回结果
     private String message;
+    public TCSL_VO_ProductResult(){};
+    public TCSL_VO_ProductResult(TCSL_XML_PMSHotelMappingResult result){
+        this.channel = result.getChannel();
+        this.hotelCode = result.getHotelCode();
+        this.roomTypeCode = result.getRoomTypeCode();
+        this.ratePlanCode = result.getRatePlanCode();
+        this.isSuccess = Boolean.parseBoolean(result.getIsSuccess());
+        this.code = result.getErrorCode();
+        this.message = result.getMessage();
+    };
 
     public String getChannel() {
         return channel;
@@ -61,11 +74,11 @@ public class TCSL_VO_ProductResult {
         this.ratePlanCode = ratePlanCode;
     }
 
-    public Boolean getSuccess() {
+    public Boolean getIsSuccess() {
         return isSuccess;
     }
 
-    public void setSuccess(Boolean success) {
+    public void setIsSuccess(Boolean success) {
         this.isSuccess = success;
     }
 

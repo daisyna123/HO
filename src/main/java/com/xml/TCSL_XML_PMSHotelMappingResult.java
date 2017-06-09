@@ -1,6 +1,4 @@
-package com.xml;/**
- * Created by administrator on 2017-06-02.
- */
+package com.xml;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,11 +8,11 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * @DESCRIPTION
  * @AUTHER administrator zhangna
- * @create 2017-06-02
+ * @create 2017-06-08
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = { })
-public class PMSHotelMappingResult {
+public class TCSL_XML_PMSHotelMappingResult {
     @XmlElement(name="Channel")
     private String channel;
     @XmlElement(name="HotelCode")

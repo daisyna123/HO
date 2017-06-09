@@ -3,7 +3,225 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 命名空间mapper：com.model.professional -->
 <mapper namespace="com.dao.TCSL_DAO_Hotel">
-    <select id="getAll" resultType="com.vo.TCSL_VO_Test">
-        SELECT * from o2o_test
+    <select id="getProducts" resultType="com.po.TCSL_PO_HotelProduct">
+        SELECT
+            CSHOPID,
+            CCHANNEL,
+            CROOMTYPEID,
+            CROOMTYPENAME,
+            CPAYTYPE,
+            DTUPDATE
+        FROM
+            OTA_BSC_PRODUCT
+        WHERE CSHOPID = #{CSHOPID}
+    </select>
+    <select id="getProductActivity" resultType="com.po.TCSL_PO_ProductActivity">
+        SELECT
+            CCHANNEL,
+            CACTIVITYID,
+            CACTIVITYNAME,
+            CPAYTYPE
+        FROM
+            OTA_BSC_PRODUC_ACTIVITY
+    </select>
+    <delete id="deleteFailInfo">
+        DELETE
+        FROM
+            OTA_BSC_PRODUCT_FAILLOG LOG
+        WHERE
+            LOG .CSHOPID = #{CSHOPID}
+        AND LOG .CCHANNEL = #{CCHANNEL}
+        AND LOG .CROOMTYPEID = #{CROOMTYPEID}
+        AND log.CACTIVITYID = #{CACTIVITYID}
+    </delete>
+    <insert id="addFailInfo">
+        INSERT INTO OTA_BSC_PRODUCT_FAILLOG (
+            CSHOPID,
+            CCHANNEL,
+            CROOMTYPEID,
+            CACTIVITYID,
+            CFAILINFO
+        )
+        VALUES
+            (
+                #{CSHOPID},
+                #{CCHANNEL},
+                #{CROOMTYPEID},
+                #{CACTIVITYID},
+                #{CFAILINFO}
+            )
+    </insert>
+    <update id="updateFailInfo">
+        UPDATE OTA_BSC_PRODUCT_FAILLOG
+        SET
+            CFAILINFO = #{CFAILINFO}
+        WHERE CSHOPID = #{CSHOPID}
+        AND CCHANNEL = #{CCHANNEL}
+        AND CROOMTYPEID = #{CROOMTYPEID}
+        AND CACTIVITYID = #{CACTIVITYID}
+    </update>
+    <select id="getFailInfo" resultType="com.po.TCSL_PO_ProductFailInfo">
+        SELECT
+            CSHOPID,
+            CCHANNEL,
+            CROOMTYPEID,
+            CACTIVITYID,
+            CFAILINFO
+        FROM
+            OTA_BSC_PRODUCT_FAILLOG
+        WHERE
+            CSHOPID = #{CSHOPID}
+        AND CCHANNEL = #{CCHANNEL}
+        AND CROOMTYPEID = #{CROOMTYPEID}
+    </select>
+    <select id="getFailInfoSingle" resultType="com.po.TCSL_PO_ProductFailInfo">
+        SELECT
+        CSHOPID,
+        CCHANNEL,
+        CROOMTYPEID,
+        CACTIVITYID,
+        CFAILINFO
+        FROM
+        OTA_BSC_PRODUCT_FAILLOG
+        WHERE
+        CSHOPID = #{CSHOPID}
+        AND CCHANNEL = #{CCHANNEL}
+        AND CROOMTYPEID = #{CROOMTYPEID}
+        AND CACTIVITYID = #{CACTIVITYID}
+    </select>
+    <insert id="addOrUpdateProduct" parameterType="com.vo.TCSL_VO_HotelProduct">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT
+            COUNT (*)
+            FROM
+            OTA_BSC_PRODUCT
+            WHERE
+            CSHOPID = #{CSHOPID}
+            AND
+            CCHANNEL =#{PRODUCT.channel}
+            AND
+            CROOMTYPEID = #{PRODUCT.roomTypeCode}
+            AND
+            CPAYTYPE = #{PRODUCT.balanceType}
+        </selectKey>
+        <if test="count>0">
+            UPDATE OTA_BSC_PRODUCT product
+            SET
+            PRODUCT.CROOMTYPENAME=#{PRODUCT.roomTypeName},
+            PRODUCT.DTUPDATE=SYSDATE
+            WHERE
+            PRODUCT.CSHOPID=#{CSHOPID}
+            AND
+            PRODUCT.CCHANNEL=#{PRODUCT.channel}
+            AND
+            PRODUCT.CROOMTYPEID = #{PRODUCT.roomTypeCode}
+            AND
+            PRODUCT.CPAYTYPE = #{PRODUCT.balanceType}
+        </if>
+        <if test="count == 0">
+            INSERT INTO OTA_BSC_PRODUCT (
+            CSHOPID,
+            CCHANNEL,
+            CROOMTYPEID,
+            CROOMTYPENAME,
+            CPAYTYPE,
+            DTUPDATE
+            )
+            VALUES
+            (
+            #{CSHOPID},
+            #{PRODUCT.channel},
+            #{PRODUCT.roomTypeCode},
+            #{PRODUCT.roomTypeName},
+            #{PRODUCT.balanceType},
+            SYSDATE
+            )
+        </if>
+    </insert>
+    <insert id="addOrUpdateHotel" parameterType="com.vo.TCSL_VO_HotelInfo">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT
+              COUNT (*)
+            FROM
+              OTA_BSC_HOTEL
+            WHERE
+              CSHOPID = #{HOTEL.hotelCode}
+            AND
+              CCHANNEL = #{CHANNEL}
+        </selectKey>
+        <if test="count > 0">
+            UPDATE OTA_BSC_HOTEL
+            SET
+            CSHOPNAME = #{HOTEL.hotelName},
+            CPHONE = #{HOTEL.telephone},
+            CADDRESS = #{HOTEL.address},
+            CEMAIL = #{HOTEL.email},
+            CPROVINCE = #{HOTEL.provinceCode},
+            CCITY = #{HOTEL.hotelCityName},
+            DTUPLOAD = SYSDATE,
+            DTOTAUPLOAD = SYSDATE
+
+            WHERE
+            CSHOPID = #{HOTEL.hotelCode}
+            AND
+            CCHANNEL = #{CHANNEL}
+        </if>
+        <if test="count==0">
+            INSERT INTO OTA_BSC_HOTEL (
+                CSHOPID,
+                CSHOPNAME,
+                CCHANNEL,
+                CPHONE,
+                CADDRESS,
+                CEMAIL,
+                CPROVINCE,
+                CCITY,
+                IOTAFLG,
+                DTUPLOAD,
+                DTOTAUPLOAD
+                )
+            VALUES
+                (
+                #{HOTEL.hotelCode},
+                #{HOTEL.hotelName},
+                #{CHANNEL},
+                #{HOTEL.telephone},
+                #{HOTEL.address},
+                #{HOTEL.email},
+                #{HOTEL.provinceCode},
+                #{HOTEL.hotelCityName},
+                '1',
+                sysdate,
+                sysdate
+                )
+        </if>
+    </insert>
+    <select id="getProductPayType" resultType="String">
+        SELECT
+            CPAYTYPE
+        FROM
+            OTA_BSC_PRODUC_ACTIVITY
+        WHERE
+            CCHANNEL =#{CCHANNEL}
+        AND CACTIVITYID = #{CACTIVITYID}
+    </select>
+    <select id="getProduct" resultType="com.po.TCSL_PO_HotelProduct">
+        SELECT
+            CSHOPID,
+            CCHANNEL,
+            CROOMTYPEID,
+            CROOMTYPENAME,
+            CPAYTYPE,
+            DTUPDATE
+        FROM
+            OTA_BSC_PRODUCT
+        WHERE
+            CSHOPID = #{CSHOPID}
+        AND
+            CCHANNEL = #{CCHANNEL}
+        AND
+            CROOMTYPEID = #{CROOMTYPEID}
+        AND
+            CPAYTYPE = #{CPAYTYPE}
     </select>
 </mapper>

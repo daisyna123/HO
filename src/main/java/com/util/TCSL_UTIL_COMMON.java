@@ -23,30 +23,29 @@ public class TCSL_UTIL_COMMON {
      * @param fields 拼接key的所有字段名称
      * @return
      */
-    public static <String ,v>Map<String,v> mapUtil(List<v> list, List<String> fields){
+    public static <v>Map<java.lang.String,v> changeToMap(List<v> list, List<String> fields){
         Map<String, v> map = new HashMap<String, v>();
         if(fields != null && fields.size() != 0){
-            if(list != null && list.size() != 0){
-                for (v obj:list) {
-                    StringBuilder strBuilder = new StringBuilder();
-                    //使用指定属性值拼接key
-                    for (String fieldName : fields) {
-                        try {
-                            PropertyDescriptor propDesc = new PropertyDescriptor((java.lang.String) fieldName, obj.getClass());
-                            Method methodGetVal = propDesc.getReadMethod();
-                            @SuppressWarnings("unchecked")
-                            String keyVal = (String)methodGetVal.invoke(obj);
-                            strBuilder.append(keyVal);
-                        } catch (IntrospectionException e) {
-                            e.printStackTrace();
-                        }catch (IllegalAccessException e){
-                            e.printStackTrace();
-                        }catch (InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+            for (v obj:list) {
+                java.lang.String str = "";
+                //使用指定属性值拼接key
+                for (String fieldName : fields) {
+                    try {
+                        PropertyDescriptor propDesc = new PropertyDescriptor((java.lang.String) fieldName, obj.getClass());
+                        Method methodGetVal = propDesc.getReadMethod();
+                        @SuppressWarnings("unchecked")
+                        String keyVal = (String)methodGetVal.invoke(obj);
+                        str = str + keyVal;
+                    } catch (IntrospectionException e) {
+                        e.printStackTrace();
+                    }catch (IllegalAccessException e){
+                        e.printStackTrace();
+                    }catch (InvocationTargetException e) {
+                        e.printStackTrace();
                     }
-                    map.put((String)strBuilder,obj);
                 }
+                str = str.replaceAll("\\s*","");
+                map.put(str,obj);
             }
         }
         return map;
@@ -59,6 +58,16 @@ public class TCSL_UTIL_COMMON {
      */
     public static boolean checkParmIsValid(List param){
         if(param != null && param.size() != 0){
+            for(Object obj : param){
+                if(obj == null || "".equals(obj.toString())){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public static boolean checkParmIsValid(String[] param){
+        if(param != null && param.length != 0){
             for(Object obj : param){
                 if(obj == null || "".equals(obj.toString())){
                     return true;
