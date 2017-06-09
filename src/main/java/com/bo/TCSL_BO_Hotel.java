@@ -79,13 +79,16 @@ public class TCSL_BO_Hotel {
          * 2.将待上传产品转换成soapBody所要求的xml
          */
         OMElement hotelXml = createHotelXml(hotelInfo,uploadProducts,otaProperty);
+        logger.debug("uploadHotelInfo()---发送soap请求xml---"+hotelXml);
         /**
          * 3.发送soap请求，上传酒店及产品信息
          */
         String url = otaProperty.getProperty("ota_uploadHotelInfo_url");
         String soapAction = otaProperty.getProperty("ota_uploadHotelInfo_soapAction");
-//        String soapResponse = TCSL_UTIL_XML.sendSoap(url,soapAction,hotelXml);
-        String soapResponse = "<PmsHotelInfoRS xmlns=\"http://www.opentravel.org/OTA/2003/05\">\n" +
+        String soapResponse = TCSL_UTIL_XML.sendSoap(url,soapAction,hotelXml);
+        logger.debug("uploadHotelInfo()--发送soap响应---"+soapResponse);
+        //测试数据
+        /*String soapResponse = "<PmsHotelInfoRS xmlns=\"http://www.opentravel.org/OTA/2003/05\">\n" +
                 "\t<PMSHotelMappingResults>\n" +
                 "\t\t<PMSHotelMappingResult>\n" +
                 "\t\t<Channel>Ctrip</Channel>\n" +
@@ -106,7 +109,7 @@ public class TCSL_BO_Hotel {
                 "\t\t<Message>产品已经存在</Message>\n" +
                 "\t\t</PMSHotelMappingResult>\n" +
                 "\t</PMSHotelMappingResults>\n" +
-                "</PmsHotelInfoRS>\n";
+                "</PmsHotelInfoRS>\n";*/
         //将soapResponse转换成bean对象
         TCSL_XML_PmsHotelInfoRS productResult = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_PmsHotelInfoRS.class,soapResponse);
         //判断是否创建失败

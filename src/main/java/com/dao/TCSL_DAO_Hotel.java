@@ -100,14 +100,36 @@ public interface TCSL_DAO_Hotel {
             @Param("CSHOPID") String CSHOPID,
             @Param("PRODUCT") TCSL_VO_HotelProduct product
     );
+
+    /**
+     * 添加/更新酒店信息
+     * @param hotelInfo
+     * @param channel
+     */
     public void addOrUpdateHotel(
             @Param("HOTEL")TCSL_VO_HotelInfo hotelInfo,
             @Param("CHANNEL") String channel
     );
+
+    /**
+     * 获取OTA活动对应的支付方式
+     * @param CCHANNEL
+     * @param CACTIVITYID
+     * @return
+     */
     public String getProductPayType(
             @Param("CCHANNEL") String CCHANNEL,
             @Param("CACTIVITYID") String CACTIVITYID
     );
+
+    /**
+     * 获取单个酒店产品记录
+     * @param CSHOPID
+     * @param CCHANNEL
+     * @param CROOMTYPEID
+     * @param CPAYTYPE
+     * @return
+     */
     public TCSL_PO_HotelProduct getProduct(
             @Param("CSHOPID") String CSHOPID,
             @Param("CCHANNEL") String CCHANNEL,
