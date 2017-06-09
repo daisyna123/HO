@@ -10,33 +10,25 @@ import javax.xml.bind.annotation.XmlType;
  * @AUTHER administrator zhangna
  * @create 2017-05-15
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder={})
 public class TCSL_VO_HotelProduct {
     //房型代码
-    @XmlElement
     private String roomTypeCode;
     //房型名称
-    @XmlElement
     private String roomTypeName;
     //价格代码名称
-    @XmlElement
     private String ratePlanCode;
     /*
      * 现预付类型
      * 501-预付
      * 16-现付
      */
-    @XmlElement
     private String balanceType;
     //价格代码名称
-    @XmlElement
     private String ratePlanName;
     /*
      * 渠道
      * 如：CTRIP,QUNAR,ELONG
      */
-    @XmlElement
     private String channel;
 
     public String getRoomTypeCode() {

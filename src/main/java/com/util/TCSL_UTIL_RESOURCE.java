@@ -7,23 +7,25 @@ package com.util;
  */
 public class TCSL_UTIL_RESOURCE {
     /**
-     * 返回值错误列表
+     * 错误代码套系
      */
-    public static final String RESOURCE_ERROR_CODE_SUCCESS = "200"; //errorCode成功代码
-    public static final String RESOURCE_ERROR_CODE_INVALIDPARAM = "400";    //errorCode参数不全代码
-    public static final String RESOURCE_ERROR_CODE_AUTH = "401";    //errorCode认证失败代码
-    public static final String RESOURCE_ERROR_CODE_SYSTEM = "500";  //errorCode系统错误代码
-    public static final String RESOURCE_ERROR_CODE_PRODUCTEXISTS = "501";//产品已经存在
-    public static final String RESOURCE_ERROR_CODE_PRODUCTFAIL = "502"; //产品创建失败
+    public static final String RESOURCE_ERROR_CODE_SUCCESS = "200"; //成功
+    public static final String RESOURCE_ERROR_DES_SUCCESS = "成功";
+
+    public static final String RESOURCE_ERROR_CODE_INVALIDPARAM = "400";    //参数不全
+    public static final String RESOURCE_ERROR_DES_INVALIDPARAM = "参数不全";
+
+    public static final String RESOURCE_ERROR_CODE_OTA = "401";    //上传OTA失败
+    public static final String RESOURCE_ERROR_DES_OTA = "上传OTA失败";
+
+    public static final String RESOURCE_ERROR_CODE_SYSTEM = "500";  //系统错误
+    public static final String RESOURCE_ERROR_DES_SYSTEM = "系统错误";
+
+    public static final String RESOURCE_ERROR_CODE_PRODUCTFAIL = "501"; //产品创建失败
     public static final String RESOURCE_ERROR_DES_PRODUCTFAIL = "产品创建失败";
 
-    public static final String RESOURCE_ERROR_DES_SUCCESS = "成功";   //errorText
-    public static final String RESOURCE_ERROR_DES_INVALIDPARAM = "参数不全";    //errorText
-    public static final String RESOURCE_ERROR_DES_AUTH = "认证失败";        //errorText
-    public static final String RESOURCE_ERROR_DES_SYSTEM = "系统错误";      //errorText
-    public static final String RESOURCE_ERROR_DES_PRODUCTEXISTS = "产品已经存在";//errorText
-    public static final int RESOURCE_RETRUN_CODE_SUCCESS = 1;  //returnCode成功标识
-    public static final int RESOURCE_RETRUN_CODE_FAIL = -1;  //returnCode失败标识
+    public static final int RESOURCE_RETRUN_CODE_SUCCESS = 1; //处理成功
+    public static final int RESOURCE_RETRUN_CODE_FAIL = -1; //处理失败
 
 
 }
