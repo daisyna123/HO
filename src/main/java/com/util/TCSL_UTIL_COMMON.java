@@ -16,6 +16,13 @@ import java.util.Properties;
  * @create 2017-05-18
  */
 public class TCSL_UTIL_COMMON {
+    public static int equalizeNum = 0; //上传OTA补偿次数
+    /**
+     * 上传OTA熔断标志
+     * true 停止线下上传OTA数据
+     * false 不停止线下上传OTA数据
+     */
+    public static boolean uploadFusingFlag = false;
     /**
      * 将list转换成map
      * 说明：将List<v>转换成Map<指定字段拼接字符串，v>
