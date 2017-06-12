@@ -6,6 +6,7 @@ package com.util;
  * @create 2017-05-19
  */
 public class TCSL_UTIL_RESOURCE {
+
     /**
      * 错误代码套系
      */
@@ -23,6 +24,9 @@ public class TCSL_UTIL_RESOURCE {
 
     public static final String RESOURCE_ERROR_CODE_PRODUCTFAIL = "501"; //产品创建失败
     public static final String RESOURCE_ERROR_DES_PRODUCTFAIL = "产品创建失败";
+
+    public static final String RESOURCE_ERROR_CODE_OTAFAIL = "502"; //OTA服务异常
+    public static final String RESOURCE_ERROR_DES_OTAFAIL = "OTA服务异常，请稍候重试"; //OTA服务异常
 
     public static final int RESOURCE_RETRUN_CODE_SUCCESS = 1; //处理成功
     public static final int RESOURCE_RETRUN_CODE_FAIL = -1; //处理失败

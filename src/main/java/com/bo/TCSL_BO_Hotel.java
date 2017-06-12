@@ -310,8 +310,28 @@ public class TCSL_BO_Hotel {
             logger.info("上传的房态信息参数不完整！");
             return  result;
         }
-        //产品有效性校验
-        List<TCSL_VO_RSItem> validList = new ArrayList<TCSL_VO_RSItem>(); //有效产品列表
+        /**
+         * 1.将房态数据保存到数据库,考虑是否可以批量添加
+         * 1.1 产品有效性校验,关键参数是否非空
+         * 1.2 判断是否全部房态数据对应的房型在数据库产品表中已存在，如果有的产品不存在，则返回失败
+         * 1.3 将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
+         * 2.将上传房态数据整合成OTA线上活动产品对应数据
+         * 2.1根据房型，酒店编码，渠道，关联查出该线下房型对应OTA活动产品，房态
+         * 2.2将数据转换成soapXML
+         * 2.3发送soap请求
+         * 2.4 soap发送成功返回成功，发送失败 返回失败 启动补偿线程rsEqualize，该线程在工程启动时也启动
+         * 2.4.1 补偿线程 查询该酒店所有未上传房态数据
+         * 2.4.2 整合数据成soapXML(可调用bo层整合方法) 发送soap请求
+         * 2.4.3 发送失败 TCSL_UTIL_COMMON.equalizeNum 加一，与ota.properties中设置的补偿次数相等时，暂停补偿
+         *       发送成功，TCSL_UTIL_COMMON.equalizeNum置为0，fusingFlag置为false，关闭线程
+         */
+
+        /**
+         * 批量添加数据库
+         * 1.检验关键房态参数是否为空，校验房态在产品表中是否存在该产品（），不存在则返回失败把不存在数据放到data中，存在则
+         * 2.连表查询房态是否存在，若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
+         * 3.删除该房态在子表中数据，插入房态的子表信息
+         */
         for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
             //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
             ArrayList param = new ArrayList();
@@ -320,20 +340,12 @@ public class TCSL_BO_Hotel {
             param.add(obj.getInvTypeCode());
             param.add(obj.getRatePlanCode());
             param.add(obj.getStatus());
-            logger.debug("房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
             if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
+                logger.debug("上传房态参数异常-----房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
                 continue;
             }
-            validList.add(obj);
         }
-        //将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
-        //TODO
-        List<TCSL_PO_RoomStatus> dbRoomStatus = new ArrayList<TCSL_PO_RoomStatus>();
-        //查询数据库从当天起向后90天的房态数据调用dao层的queryRS()
-        //TODO
 
-        //将数据转换成OTA所需xml形式上传(xml格式 调用uploadRSOTA()
-//        result = uploadRSOTA(dbRoomStatus);
         return  result;
     }
 

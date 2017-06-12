@@ -1,5 +1,7 @@
 package com.rest;
 import com.bo.TCSL_BO_Hotel;
+import com.oracle.webservices.internal.api.message.PropertySet;
+import com.sun.javafx.tools.ant.Platform;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
 import com.vo.TCSL_VO_HotelInfo;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @DESCRIPTION
@@ -82,6 +85,13 @@ public class TCSL_REST_Hotel {
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
             logger.info("酒店信息参数不全！");
+            return result;
+        }
+        //判断上传接口是否熔断
+        if(TCSL_UTIL_COMMON.uploadFusingFlag == true){
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTAFAIL); //OTA服务异常
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTAFAIL); //OTA服务异常
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL);
             return result;
         }
         //调用bo层上传酒店房态逻辑处理
