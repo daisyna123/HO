@@ -224,6 +224,52 @@
         AND
             CPAYTYPE = #{CPAYTYPE}
     </select>
+    <select id="getProductStatus" resultType="com.po.TCSL_PO_HotelProduct">
+        SELECT
+        CSHOPID,
+        CCHANNEL,
+        CROOMTYPEID,
+        CROOMTYPENAME,
+        CPAYTYPE,
+        DTUPDATE
+        FROM
+        OTA_BSC_PRODUCT
+        WHERE
+        CSHOPID = #{CSHOPID}
+        AND
+        CCHANNEL = #{CCHANNEL}
+        AND
+        CROOMTYPEID = #{CROOMTYPEID}
+    </select>
+    <select id="getRoomState" resultType="TCSL_PO_RoomStatus">
+        SELECT
+            CSHOPID,
+            CCHANNEL,
+            CPLANID,
+            CPLANNAME,
+            IDELFLG,
+            DTUPLOAD,
+            DTOTAUPLOAD
+        FROM
+            OTA_BSC_PRODUCT_STATUS
+        WHERE
+            CSHOPID = #{CSHOPID}
+        AND CCHANNEL = #{CCHANNEL}
+        AND CPLANID = #{CPLANID}
+    </select>
+    <delete id="delRoomState">
+        delete
+        FROM
+            OTA_BSC_PRODUCT_STATUSDT
+        WHERE
+            CPLANID=#{CPLANID}
+        AND
+          CROOMTYPEID=#{CROOMTYPEID}
+    </delete>
+
+    <insert id="addRoomStatus" parameterType="com.vo.TCSL_VO_RSItem">
+
+    </insert>
     <select id="getActivity" resultType="com.po.TCSL_PO_ProductActivity">
         SELECT
             activity.CCHANNEL,

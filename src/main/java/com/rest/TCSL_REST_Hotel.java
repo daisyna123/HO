@@ -1,7 +1,5 @@
 package com.rest;
 import com.bo.TCSL_BO_Hotel;
-import com.oracle.webservices.internal.api.message.PropertySet;
-import com.sun.javafx.tools.ant.Platform;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
 import com.vo.TCSL_VO_HotelInfo;
@@ -75,7 +73,7 @@ public class TCSL_REST_Hotel {
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
-            logger.info("酒店信息参数不全！");
+            logger.info("房态信息参数不全！");
             return result;
         }
         logger.debug("参数：TCSL_VO_RoomStatus:酒店代码-"+roomStatus.getHotelCode());
@@ -84,7 +82,7 @@ public class TCSL_REST_Hotel {
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
-            logger.info("酒店信息参数不全！");
+            logger.info("房态信息参数不全！");
             return result;
         }
         //判断上传接口是否熔断

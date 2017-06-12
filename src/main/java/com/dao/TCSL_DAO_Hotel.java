@@ -3,8 +3,11 @@ package com.dao;
 import com.po.TCSL_PO_HotelProduct;
 import com.po.TCSL_PO_ProductActivity;
 import com.po.TCSL_PO_ProductFailInfo;
+import com.po.TCSL_PO_RoomStatus;
 import com.vo.TCSL_VO_HotelInfo;
 import com.vo.TCSL_VO_HotelProduct;
+import com.vo.TCSL_VO_RSItem;
+import com.vo.TCSL_VO_RoomStatus;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -136,6 +139,50 @@ public interface TCSL_DAO_Hotel {
             @Param("CROOMTYPEID") String CROOMTYPEID,
             @Param("CPAYTYPE") String CPAYTYPE
     );
+
+    /**
+     * 获取酒店产品不同支付方式的记录（根据酒店代码、渠道、房型代码）
+     * @param CSHOPID
+     * @param CCHANNEL
+     * @param CROOMTYPEID
+     * @return
+     */
+    public List<TCSL_PO_HotelProduct> getProductStatus(
+            @Param("CSHOPID") String CSHOPID,
+            @Param("CCHANNEL") String CCHANNEL,
+            @Param("CROOMTYPEID") String CROOMTYPEID
+    );
+
+    /**
+     * 获取房态是否存在
+     * @param CSHOPID
+     * @param CCHANNEL
+     * @param CPLANID
+     * @return
+     */
+    public TCSL_PO_RoomStatus getRoomState(
+            @Param("CSHOPID") String CSHOPID,
+            @Param("CCHANNEL") String CCHANNEL,
+            @Param("CPLANID") String CPLANID
+    );
+
+    /**
+     * 删除房态明细中的某一条记录
+     * @param CPLANID
+     * @param CROOMTYPEID
+     */
+    public void delRoomState(
+            @Param("CPLANID") String CPLANID,
+            @Param("CROOMTYPEID") String CROOMTYPEID
+    );
+
+    /**
+     * 添加房态主表信息
+     * @param roomStatus
+     */
+    public void addRoomStatus(
+            @Param("roomStatus")TCSL_VO_RoomStatus roomStatus
+            );
     public List<TCSL_PO_ProductActivity> getActivity(
             @Param("CSHOPID") String CSHOPID,
             @Param("CCHANNEL") String CCHANNEL,
