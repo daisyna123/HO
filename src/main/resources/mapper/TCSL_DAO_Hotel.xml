@@ -224,4 +224,20 @@
         AND
             CPAYTYPE = #{CPAYTYPE}
     </select>
+    <select id="getActivity" resultType="com.po.TCSL_PO_ProductActivity">
+        SELECT
+            activity.CCHANNEL,
+            activity.CACTIVITYID,
+            activity.CACTIVITYNAME,
+            activity.CPAYTYPE
+        FROM
+            OTA_BSC_PRODUCT product,
+            OTA_BSC_PRODUC_ACTIVITY activity
+        WHERE
+            activity.CCHANNEL = product.CCHANNEL
+        AND activity.CPAYTYPE = product.CPAYTYPE
+        AND product.CSHOPID = #{CSHOPID}
+        AND product.CCHANNEL = #{CCHANNEL}
+        AND product.CROOMTYPEID = #{CROOMTYPEID}
+    </select>
 </mapper>
