@@ -3,7 +3,7 @@ package com.po;
 import java.util.Date;
 
 /**
- * @DESCRIPTION
+ * @DESCRIPTION 酒店产品类表
  * @AUTHER administrator zhangna
  * @create 2017-05-15
  */

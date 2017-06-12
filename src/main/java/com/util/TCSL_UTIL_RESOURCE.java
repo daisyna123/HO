@@ -28,6 +28,9 @@ public class TCSL_UTIL_RESOURCE {
     public static final String RESOURCE_ERROR_CODE_OTAFAIL = "502"; //OTA服务异常
     public static final String RESOURCE_ERROR_DES_OTAFAIL = "OTA服务异常，请稍候重试"; //OTA服务异常
 
+    public static final String RESOURCE_ERROR_CODE_PRODUCTNO = "503"; //产品不存在
+    public static final String RESOURCE_ERROR_DES_PRODUCTNO = "产品不存在";
+
     public static final int RESOURCE_RETRUN_CODE_SUCCESS = 1; //处理成功
     public static final int RESOURCE_RETRUN_CODE_FAIL = -1; //处理失败
 

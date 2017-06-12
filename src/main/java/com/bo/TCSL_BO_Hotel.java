@@ -303,6 +303,12 @@ public class TCSL_BO_Hotel {
      */
     public TCSL_VO_Result uploadRoomStatus(TCSL_VO_RoomStatus roomStatus){
         TCSL_VO_Result result = new TCSL_VO_Result();
+        //待上传房态主表列表
+        List<TCSL_VO_RSItem> uploadStatus = new ArrayList<TCSL_VO_RSItem>();
+        //待上传房态明细表列表
+        List<TCSL_VO_RSItem> uploadStateDetails = new ArrayList<TCSL_VO_RSItem>();
+        //待更新房态列表
+        List<TCSL_VO_RSItem> updateStatus = new ArrayList<TCSL_VO_RSItem>();
         //对roomStatus中projects房态列表有效性验证
         if(roomStatus.getProjects() == null || roomStatus.getProjects().size()==0){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
@@ -311,33 +317,12 @@ public class TCSL_BO_Hotel {
             logger.info("上传的房态信息参数不完整！");
             return  result;
         }
+
         /**
          * 1.将房态数据保存到数据库,考虑是否可以批量添加
          * 1.1 产品有效性校验,关键参数是否非空
          * 1.2 判断是否全部房态数据对应的房型在数据库产品表中已存在，如果有的产品不存在，则返回失败
          * 1.3 将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
-         */
-
-        /**
-         * 批量添加数据库
-         * 1.检验关键房态参数是否为空，校验房态在产品表中是否存在该产品（），不存在则返回失败把不存在数据放到data中，存在则
-         * 2.连表查询房态是否存在，若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
-         * 3.删除该房态在子表中数据，插入房态的子表信息
-         */
-//        for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
-//            //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
-//            ArrayList param = new ArrayList();
-//            param.add(obj.getDate());
-//            param.add(obj.getDestinationSystemCodes());
-//            param.add(obj.getInvTypeCode());
-//            param.add(obj.getRatePlanCode());
-//            param.add(obj.getStatus());
-//            if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
-//                logger.debug("上传房态参数异常-----房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
-//                continue;
-//            }
-//        }
-        /**
          * 2.将上传房态数据整合成OTA线上活动产品对应数据
          * 2.1根据房型，酒店编码，渠道，关联查出该线下房型对应OTA活动产品，房态
          * 2.2将数据转换成soapXML
@@ -349,11 +334,81 @@ public class TCSL_BO_Hotel {
          *       发送成功，TCSL_UTIL_COMMON.equalizeNum置为0，fusingFlag置为false，关闭线程
          */
 
+        /**
+         * 批量添加数据库
+         * 1.检验关键房态参数是否为空，校验房态在产品表中是否存在该产品（根据酒店代码、渠道、房型代码），不存在则返回失败把不存在数据放到data中，存在则
+         * 2.查询房态是否存在，若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
+         * 3.删除该房态在子表中数据，插入房态的子表信息
+         */
+        //1.检验关键房态参数是否为空
+        for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
+            //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
+            ArrayList param = new ArrayList();
+            param.add(obj.getStart());
+            param.add(obj.getDestinationSystemCodes());
+            param.add(obj.getInvTypeCode());
+            param.add(obj.getRatePlanCode());
+            param.add(obj.getStatus());
+            param.add(obj.getEnd());
+            logger.debug("房态生效开始时间："+obj.getStart()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode()+"房态生效结束时间"+obj.getEnd());
+            if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
+                result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
+                result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
+                result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+                logger.info("房态信息参数不全！");
+                return result;
+            }
+        }
+        String hotelCode = roomStatus.getHotelCode();//酒店代码
+        for(TCSL_VO_RSItem status : roomStatus.getProjects()){
+           String roomCode = status.getInvTypeCode() ;//房型代码
+            String planId = status.getRatePlanCode();//线下房态方案编码
+            for(String channel : status.getDestinationSystemCodes()) {//渠道
+                //校验房态在产品表中是否存在该产品（根据酒店代码、渠道、房型代码）
+                List<TCSL_PO_HotelProduct> productsList = daoHotel.getProductStatus(hotelCode, channel, roomCode);
+                if (productsList.size() == 0) {
+                    //如果这个产品不在产品表中，
+                    result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_PRODUCTNO);//503
+                    result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_PRODUCTNO);//产品不存在
+                    result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+                    logger.info("没有此产品！");
+                }
+                //查询房态是否存在,若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
+                if(daoHotel.getRoomState(hotelCode,channel,planId) == null){//房态不存在
+                    uploadStatus.add(status);//添加到待上传房态列表
+                    uploadStateDetails.add(status);//添加到待上传房态详情列表
+                }else{
+                    //房态已存在
+                    updateStatus.add(status);//添加到待更新列表
+                    uploadStateDetails.add(status);//添加到待上传房态详情列表
+                }
+            }
+            //删除该房态在子表中数据
+            daoHotel.delRoomState(planId,roomCode);
+
+        }
+        if(uploadStatus.size()!=0){//上传房态数据
+
+        }
+        if(updateStatus.size()!=0){//更新待更新房态信息
+
+        }
+        if(uploadStateDetails.size()!=0){//上传待上传房态详情表
+
+        }
+
+
+        //将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
+        //TODO
+        List<TCSL_PO_RoomStatus> dbRoomStatus = new ArrayList<TCSL_PO_RoomStatus>();
+        //查询数据库从当天起向后90天的房态数据调用dao层的queryRS()
+        //TODO
+
+        //将数据转换成OTA所需xml形式上传(xml格式 调用uploadRSOTA()
+//        result = uploadRSOTA(dbRoomStatus);
         //2.1线下产品转换为对应线上活动产品
         List<TCSL_VO_RSItem> list = changeToOTARS(roomStatus);
         //2.2将数据转换成soapXML
-
-
         return  result;
     }
 
