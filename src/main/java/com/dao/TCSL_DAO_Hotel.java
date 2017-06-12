@@ -136,4 +136,9 @@ public interface TCSL_DAO_Hotel {
             @Param("CROOMTYPEID") String CROOMTYPEID,
             @Param("CPAYTYPE") String CPAYTYPE
     );
+    public List<TCSL_PO_ProductActivity> getActivity(
+            @Param("CSHOPID") String CSHOPID,
+            @Param("CCHANNEL") String CCHANNEL,
+            @Param("CROOMTYPEID") String CROOMTYPEID
+    );
 }

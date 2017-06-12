@@ -4,6 +4,7 @@ import com.po.TCSL_PO_HotelProduct;
 import com.po.TCSL_PO_ProductActivity;
 import com.po.TCSL_PO_ProductFailInfo;
 import com.po.TCSL_PO_RoomStatus;
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
 import com.util.TCSL_UTIL_XML;
@@ -214,7 +215,7 @@ public class TCSL_BO_Hotel {
     public OMElement createHotelXml(TCSL_VO_HotelInfo hotelInfo,List<TCSL_VO_HotelProduct> products,Properties otaProperty){
         List<TCSL_PO_ProductActivity> activities = daoHotel.getProductActivity(); //OTA所有活动列表
         OMFactory factory = OMAbstractFactory.getOMFactory();
-        String nameSpaceProperty =  otaProperty.getProperty("ota_uploadHotelInfo_nameSpace");
+        String nameSpaceProperty =  otaProperty.getProperty("ota_nameSpace");
         OMNamespace namespace = factory.createOMNamespace(nameSpaceProperty,"");
         OMElement pmsHotelInfoRQTag = factory.createOMElement("PmsHotelInfoRQ",namespace);
         OMElement pMSBaseHotelInfosTag = factory.createOMElement("PMSBaseHotelInfos",null);
@@ -315,6 +316,28 @@ public class TCSL_BO_Hotel {
          * 1.1 产品有效性校验,关键参数是否非空
          * 1.2 判断是否全部房态数据对应的房型在数据库产品表中已存在，如果有的产品不存在，则返回失败
          * 1.3 将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
+         */
+
+        /**
+         * 批量添加数据库
+         * 1.检验关键房态参数是否为空，校验房态在产品表中是否存在该产品（），不存在则返回失败把不存在数据放到data中，存在则
+         * 2.连表查询房态是否存在，若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
+         * 3.删除该房态在子表中数据，插入房态的子表信息
+         */
+//        for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
+//            //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
+//            ArrayList param = new ArrayList();
+//            param.add(obj.getDate());
+//            param.add(obj.getDestinationSystemCodes());
+//            param.add(obj.getInvTypeCode());
+//            param.add(obj.getRatePlanCode());
+//            param.add(obj.getStatus());
+//            if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
+//                logger.debug("上传房态参数异常-----房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
+//                continue;
+//            }
+//        }
+        /**
          * 2.将上传房态数据整合成OTA线上活动产品对应数据
          * 2.1根据房型，酒店编码，渠道，关联查出该线下房型对应OTA活动产品，房态
          * 2.2将数据转换成soapXML
@@ -326,29 +349,64 @@ public class TCSL_BO_Hotel {
          *       发送成功，TCSL_UTIL_COMMON.equalizeNum置为0，fusingFlag置为false，关闭线程
          */
 
-        /**
-         * 批量添加数据库
-         * 1.检验关键房态参数是否为空，校验房态在产品表中是否存在该产品（），不存在则返回失败把不存在数据放到data中，存在则
-         * 2.连表查询房态是否存在，若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
-         * 3.删除该房态在子表中数据，插入房态的子表信息
-         */
-        for(TCSL_VO_RSItem obj : roomStatus.getProjects()){
-            //参数校验（房态生效时间/PMS房型代码/价格代码/渠道代码/房间状态）是否为空,调用工具类中的checkParmIsValid方法
-            ArrayList param = new ArrayList();
-            param.add(obj.getDate());
-            param.add(obj.getDestinationSystemCodes());
-            param.add(obj.getInvTypeCode());
-            param.add(obj.getRatePlanCode());
-            param.add(obj.getStatus());
-            if(TCSL_UTIL_COMMON.checkParmIsValid(param)){
-                logger.debug("上传房态参数异常-----房态生效时间："+obj.getDate()+"渠道："+obj.getDestinationSystemCodes()+"房型代码："+obj.getInvTypeCode());
-                continue;
-            }
-        }
+        //2.1线下产品转换为对应线上活动产品
+        List<TCSL_VO_RSItem> list = changeToOTARS(roomStatus);
+        //2.2将数据转换成soapXML
+
 
         return  result;
     }
 
+    /**
+     * 创建上传房态soapXml
+     * @param hotelCode 酒店编码
+     * @param list 酒店线上活动产品房态列表
+     * @param otaProperty ota配置文件
+     * @return
+     */
+    public OMElement createRsXml(String hotelCode,List<TCSL_VO_RSItem> list,Properties otaProperty){
+        OMFactory factory = OMAbstractFactory.getOMFactory();
+        //创建命名空间
+        String nameSpaceProperty =  otaProperty.getProperty("ota_nameSpace");
+        OMNamespace namespace = factory.createOMNamespace(nameSpaceProperty,"");
+        String nameSpaceXsiProperty = otaProperty.getProperty("ota_nameSpace_xsi");
+        OMNamespace nameSpaceXsi =  factory.createOMNamespace(nameSpaceXsiProperty,"xsi");
+        //创建xml节点
+        OMElement OTA_HotelAvailNotifRQ = factory.createOMElement("PmsHotelInfoRQ",namespace);
+        //TODO
+        return OTA_HotelAvailNotifRQ;
+    }
+
+    /**
+     * 将线下产品转换成线上活动产品
+     * @return 线上活动产品列表
+     */
+    public List<TCSL_VO_RSItem> changeToOTARS(TCSL_VO_RoomStatus roomStatus){
+        String hotelCode = roomStatus.getHotelCode(); //酒店编码
+        List<TCSL_VO_RSItem> projects = roomStatus.getProjects(); //酒店待处理参数列表
+        List<TCSL_VO_RSItem> list = new ArrayList<TCSL_VO_RSItem>();//线上活动产品列表
+        //获取线下产品对应的线上活动信息
+        Map<TCSL_VO_RSItem,List<TCSL_PO_ProductActivity>> rsMap =
+                new HashMap<TCSL_VO_RSItem, List<TCSL_PO_ProductActivity>>(); //key 线下产品，value 线下产品对应的线上活动列表
+        for (TCSL_VO_RSItem item : projects){ //遍历获取到请求参数中每个产品
+            List<String> channels = item.getDestinationSystemCodes();
+            for (String channel : channels){ //每个产品的渠道列表
+                List<TCSL_PO_ProductActivity> activities =
+                        daoHotel.getActivity(hotelCode,channel,item.getInvTypeCode()); //每个产品每个渠道的线上活动列表
+                rsMap.put(item,activities);
+            }
+        }
+        //拼接线上活动产品列表
+        for (TCSL_VO_RSItem item : projects){
+            List<TCSL_PO_ProductActivity> activities = rsMap.get(item);
+            for(TCSL_PO_ProductActivity poActivity : activities){
+                //使用activity的活动方案代码，名称，克隆一个rsItem
+                TCSL_VO_RSItem rsItem = new TCSL_VO_RSItem(item,poActivity);
+                list.add(rsItem);
+            }
+        }
+        return list;
+    }
     /**
      * 上传房价逻辑部分
      * @param roomPrice 房价信息
