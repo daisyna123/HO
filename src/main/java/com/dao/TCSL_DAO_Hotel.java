@@ -1,9 +1,6 @@
 package com.dao;
 
-import com.po.TCSL_PO_HotelProduct;
-import com.po.TCSL_PO_ProductActivity;
-import com.po.TCSL_PO_ProductFailInfo;
-import com.po.TCSL_PO_RoomStatus;
+import com.po.*;
 import com.vo.TCSL_VO_HotelInfo;
 import com.vo.TCSL_VO_HotelProduct;
 import com.vo.TCSL_VO_RSItem;
@@ -154,7 +151,7 @@ public interface TCSL_DAO_Hotel {
     );
 
     /**
-     * 获取房态是否存在
+     * 获取房态是否存在(查询房态表中是否有这个酒店这个渠道这个线下编号的房态)
      * @param CSHOPID
      * @param CCHANNEL
      * @param CPLANID
@@ -165,27 +162,39 @@ public interface TCSL_DAO_Hotel {
             @Param("CCHANNEL") String CCHANNEL,
             @Param("CPLANID") String CPLANID
     );
-
     /**
-     * 删除房态明细中的某一条记录
-     * @param CPLANID
-     * @param CROOMTYPEID
-     */
-    public void delRoomState(
-            @Param("CPLANID") String CPLANID,
-            @Param("CROOMTYPEID") String CROOMTYPEID
-    );
-
-    /**
-     * 添加房态主表信息
+     * 批量添加房态主表信息
      * @param roomStatus
      */
     public void addRoomStatus(
-            @Param("roomStatus")TCSL_VO_RoomStatus roomStatus
+            @Param("roomStatus")List<TCSL_PO_RoomStatus> roomStatus
             );
+
+    /**
+     * 单个添加房态主表信息
+     * @param roomStatus
+     */
+    public void addRoomSingle(
+            @Param("roomStatus") TCSL_PO_RoomStatus roomStatus
+    );
+    /**
+     * 批量更新房态主表信息
+     * @param roomStatus
+     */
+    public void updateRoomStatus(
+            @Param("roomStatus")List<TCSL_PO_RoomStatus> roomStatus
+    );
     public List<TCSL_PO_ProductActivity> getActivity(
             @Param("CSHOPID") String CSHOPID,
             @Param("CCHANNEL") String CCHANNEL,
             @Param("CROOMTYPEID") String CROOMTYPEID
+    );
+
+    /**
+     *批量上传房态详情(先删除，在插入)
+     * @param roomStatusDetail
+     */
+    public void addRoomStatusDetail(
+            @Param("roomStatusDetail") List<TCSL_PO_ProductStatusDt> roomStatusDetail
     );
 }
