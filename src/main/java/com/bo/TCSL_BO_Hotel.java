@@ -416,6 +416,12 @@ public class TCSL_BO_Hotel {
         //2.1线下产品转换为对应线上活动产品
         List<TCSL_VO_RSItem> list = changeToOTARS(roomStatus);
         //2.2将数据转换成soapXML
+        Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
+        OMElement soapXml = createRsXml(roomStatus.getHotelCode(),list,p);
+        //2.3发送soap请求,成功返回成功，失败启动补偿线程
+        //TODO
+
+
         return  result;
     }
 
@@ -485,7 +491,7 @@ public class TCSL_BO_Hotel {
     }
 
     /**
-     * 将线下产品转换成线上活动产品
+     * 将线下产品房态转换成线上活动产品房态
      * @return 线上活动产品列表
      */
     public List<TCSL_VO_RSItem> changeToOTARS(TCSL_VO_RoomStatus roomStatus){

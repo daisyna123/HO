@@ -22,7 +22,7 @@
             CACTIVITYNAME,
             CPAYTYPE
         FROM
-            OTA_BSC_PRODUC_ACTIVITY
+            OTA_BSC_PRODUCT_ACTIVITY
     </select>
     <delete id="deleteFailInfo">
         DELETE
@@ -200,7 +200,7 @@
         SELECT
             CPAYTYPE
         FROM
-            OTA_BSC_PRODUC_ACTIVITY
+            OTA_BSC_PRODUCT_ACTIVITY
         WHERE
             CCHANNEL =#{CCHANNEL}
         AND CACTIVITYID = #{CACTIVITYID}
@@ -299,13 +299,37 @@
             activity.CPAYTYPE
         FROM
             OTA_BSC_PRODUCT product,
-            OTA_BSC_PRODUC_ACTIVITY activity
+            OTA_BSC_PRODUCT_ACTIVITY activity
         WHERE
             activity.CCHANNEL = product.CCHANNEL
         AND activity.CPAYTYPE = product.CPAYTYPE
         AND product.CSHOPID = #{CSHOPID}
         AND product.CCHANNEL = #{CCHANNEL}
         AND product.CROOMTYPEID = #{CROOMTYPEID}
+    </select>
+    <select id="getUnUploadRs" resultType="com.po.TCSL_PO_RsEqualize">
+        SELECT
+            status.CSHOPID,
+            status.CCHANNEL,
+            statusDT.CROOMTYPEID,
+            activity.CACTIVITYID,
+            activity.CACTIVITYNAME,
+            TO_CHAR(statusDT.DBTIME),
+            TO_CHAR(statusDT.DETIME),
+            statusDT.IROOMSTATUS
+
+        FROM
+            OTA_BSC_PRODUCT_STATUS status
+        INNER JOIN OTA_BSC_PRODUCT_STATUSDT statusDT ON status.CPLANID = statusDT.CPLANID
+        AND status.DTUPLOAD > status.DTOTAUPLOAD
+        AND status.IDELFLG = 0
+        --查询所有未上传房态 end
+        INNER JOIN OTA_BSC_PRODUCT product ON status.CSHOPID = product.CSHOPID
+        --过滤未创建成功产品的房态信息
+        AND status.CCHANNEL = product.CCHANNEL
+        AND statusDT.CROOMTYPEID = product.CROOMTYPEID
+        LEFT JOIN OTA_BSC_PRODUCT_ACTIVITY activity ON product.CPAYTYPE = activity.CPAYTYPE
+        AND product.CCHANNEL = activity.CCHANNEL
     </select>
     <update id="updateRoomStatus" parameterType="java.util.List">
         <foreach collection="roomStatus" item="item" index="index" open="begin" close=";end;" separator = "union all">

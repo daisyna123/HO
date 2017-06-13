@@ -1,22 +1,12 @@
 package com.bo;
-import com.dao.TCSL_DAO_Test;
-import com.po.TCSL_PO_Test;
 import com.util.TCSL_UTIL_COMMON;
-import com.util.TCSL_UTIL_XMLData;
-import com.vo.TCSL_VO_HotelInfo;
+import com.util.TCSL_UTIL_XML;
 import com.vo.TCSL_VO_Result;
-import com.xml.PmsHotelInfoRS;
-import com.xml.Translator;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
-import org.apache.axis2.AxisFault;
-import org.apache.axis2.addressing.EndpointReference;
-import org.apache.axis2.client.Options;
-import org.apache.axis2.client.ServiceClient;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.ibatis.mapping.ParameterMode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +16,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
 /**
  * Created by zhangtuoyu on 2017/4/27.
  */
@@ -120,9 +105,9 @@ public class TCSL_BO_Test1 {
         info.setHotelName("天财商龙");
         String param = TCSL_UTIL_XMLData.beanToString(info);
         System.out.println(param);*/
-        Translator translator = new Translator();
-        translator.setWordKey("name");
-        String param = TCSL_UTIL_XMLData.beanToString(translator);
+//        Translator translator = new Translator();
+//        translator.setWordKey("name");
+//        String param = TCSL_UTIL_XML.beanToString(translator);
         //测试结束
         String url = "http://fy.webxml.com.cn/webservices/EnglishChinese.asmx";
         String action = "http://WebXml.com.cn/Translator";
@@ -182,6 +167,6 @@ public class TCSL_BO_Test1 {
         System.out.println("请求参数------"+transTag);
         String url = "http://fy.webxml.com.cn/webservices/EnglishChinese.asmx";
         String soapAction = "http://WebXml.com.cn/Translator";
-        TCSL_UTIL_XMLData.sendSoap(url,soapAction,transTag);
+        TCSL_UTIL_XML.sendSoap(url,soapAction,transTag);
     }
 }

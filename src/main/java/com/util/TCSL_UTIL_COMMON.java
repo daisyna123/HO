@@ -1,4 +1,7 @@
 package com.util;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.PostConstruct;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -15,7 +18,11 @@ import java.util.Properties;
  * @AUTHER administrator zhangna
  * @create 2017-05-18
  */
+@Repository
 public class TCSL_UTIL_COMMON {
+    /**
+     * 补偿上传OTA次数
+     */
     public static int equalizeNum = 0; //上传OTA补偿次数
     /**
      * 上传OTA熔断标志
@@ -23,6 +30,22 @@ public class TCSL_UTIL_COMMON {
      * false 不停止线下上传OTA数据
      */
     public static boolean uploadFusingFlag = false;
+
+    /**
+     * 工程启动初始化逻辑
+     * 该方法内容将在工程完成bean创建后执行
+     */
+    public static TCSL_UTIL_RSEqualize rsEqualize = null; //房态补偿线程
+    @PostConstruct
+    public  void  init(){
+        if(rsEqualize == null){
+            rsEqualize = new TCSL_UTIL_RSEqualize();
+        }
+        rsEqualize.start();
+    }
+
+
+
     /**
      * 将list转换成map
      * 说明：将List<v>转换成Map<指定字段拼接字符串，v>
