@@ -1,9 +1,6 @@
 package com.bo;
 import com.dao.TCSL_DAO_Hotel;
-import com.po.TCSL_PO_HotelProduct;
-import com.po.TCSL_PO_ProductActivity;
-import com.po.TCSL_PO_ProductFailInfo;
-import com.po.TCSL_PO_RoomStatus;
+import com.po.*;
 import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
@@ -19,7 +16,11 @@ import org.apache.axiom.om.OMNamespace;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 /**
  * @DESCRIPTION
@@ -301,14 +302,15 @@ public class TCSL_BO_Hotel {
      * @param roomStatus 房态信息
      * @return
      */
+    @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
     public TCSL_VO_Result uploadRoomStatus(TCSL_VO_RoomStatus roomStatus){
         TCSL_VO_Result result = new TCSL_VO_Result();
         //待上传房态主表列表
-        List<TCSL_VO_RSItem> uploadStatus = new ArrayList<TCSL_VO_RSItem>();
+        List<TCSL_PO_RoomStatus> uploadStatus = new ArrayList<TCSL_PO_RoomStatus>();
         //待上传房态明细表列表
-        List<TCSL_VO_RSItem> uploadStateDetails = new ArrayList<TCSL_VO_RSItem>();
+        List<TCSL_PO_ProductStatusDt> uploadStateDetails = new ArrayList<TCSL_PO_ProductStatusDt>();
         //待更新房态列表
-        List<TCSL_VO_RSItem> updateStatus = new ArrayList<TCSL_VO_RSItem>();
+        List<TCSL_PO_RoomStatus> updateStatus = new ArrayList<TCSL_PO_RoomStatus>();
         //对roomStatus中projects房态列表有效性验证
         if(roomStatus.getProjects() == null || roomStatus.getProjects().size()==0){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
@@ -361,7 +363,7 @@ public class TCSL_BO_Hotel {
         }
         String hotelCode = roomStatus.getHotelCode();//酒店代码
         for(TCSL_VO_RSItem status : roomStatus.getProjects()){
-           String roomCode = status.getInvTypeCode() ;//房型代码
+            String roomCode = status.getInvTypeCode() ;//房型代码
             String planId = status.getRatePlanCode();//线下房态方案编码
             for(String channel : status.getDestinationSystemCodes()) {//渠道
                 //校验房态在产品表中是否存在该产品（根据酒店代码、渠道、房型代码）
@@ -371,47 +373,97 @@ public class TCSL_BO_Hotel {
                     result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_PRODUCTNO);//503
                     result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_PRODUCTNO);//产品不存在
                     result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+                    result.setData(status);
                     logger.info("没有此产品！");
+                    continue;
                 }
                 //查询房态是否存在,若房态不存在，放到房态待上传列表，若房态存在放到待更新列表
+                TCSL_PO_RoomStatus uploadStatue = new TCSL_PO_RoomStatus();
+                uploadStatue.setCCHANNEL(channel);//渠道
+                uploadStatue.setCPLANID(planId);//线下房态方案编码
+                uploadStatue.setCSHOPID(hotelCode);//酒店代码
+                uploadStatue.setCPLANNAME(status.getRatePlanName());//线下房态方案名称
+                TCSL_PO_ProductStatusDt upladStateDetail = new TCSL_PO_ProductStatusDt();
+                upladStateDetail.setCPLANID(planId);//线下房态方案编码
+                upladStateDetail.setCROOMTYPEID(roomCode);//房型编码
+               //字符串转date
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String startDate = status.getStart();
+                String endDate = status.getEnd();
+                try {
+                    upladStateDetail.setDBTIME(sdf.parse(startDate));//房态生效开始时间
+                    upladStateDetail.setDETIME(sdf.parse(endDate));//房态生效结束时间
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if("open".equals(status.getStatus())) {
+                    upladStateDetail.setIROOMSTATUS(1);//房间状态0:打开状态
+                }else{
+                    upladStateDetail.setIROOMSTATUS(0);//房间状态1：关闭状态
+                }
                 if(daoHotel.getRoomState(hotelCode,channel,planId) == null){//房态不存在
-                    uploadStatus.add(status);//添加到待上传房态列表
-                    uploadStateDetails.add(status);//添加到待上传房态详情列表
+                    uploadStatus.add(uploadStatue);//添加到待上传房态列表
+                    uploadStateDetails.add(upladStateDetail);//添加到待上传房态详情列表
                 }else{
                     //房态已存在
-                    updateStatus.add(status);//添加到待更新列表
-                    uploadStateDetails.add(status);//添加到待上传房态详情列表
+                    updateStatus.add(uploadStatue);//添加到待更新列表
+                    uploadStateDetails.add(upladStateDetail);//添加到待上传房态详情列表
                 }
             }
-            //删除该房态在子表中数据
-            daoHotel.delRoomState(planId,roomCode);
-
         }
-        if(uploadStatus.size()!=0){//上传房态数据
-
-        }
-        if(updateStatus.size()!=0){//更新待更新房态信息
-
-        }
-        if(uploadStateDetails.size()!=0){//上传待上传房态详情表
-
-        }
-
-
-        //将房态数据保存到数据库， 调用dao层addRS(validList) 考虑是否可以批量添加
-        //TODO
-        List<TCSL_PO_RoomStatus> dbRoomStatus = new ArrayList<TCSL_PO_RoomStatus>();
-        //查询数据库从当天起向后90天的房态数据调用dao层的queryRS()
-        //TODO
-
-        //将数据转换成OTA所需xml形式上传(xml格式 调用uploadRSOTA()
-//        result = uploadRSOTA(dbRoomStatus);
+        //批量上传房态信息
+        this.batchUpload(uploadStatus,updateStatus,uploadStateDetails);
         //2.1线下产品转换为对应线上活动产品
         List<TCSL_VO_RSItem> list = changeToOTARS(roomStatus);
         //2.2将数据转换成soapXML
         return  result;
     }
 
+    /**
+     * 批量上传房态
+     * @param uploadStatus
+     * @param updateStatus
+     * @param uploadStateDetails
+     */
+    public void batchUpload(List<TCSL_PO_RoomStatus> uploadStatus,List<TCSL_PO_RoomStatus> updateStatus,List<TCSL_PO_ProductStatusDt> uploadStateDetails){
+        if(uploadStatus.size()!=0){//待上传房态数据不为空
+            List<TCSL_PO_RoomStatus> uploadList = new ArrayList<TCSL_PO_RoomStatus>();//30条上传房态列表
+            for(int i=0;i<uploadStatus.size();i++){
+                //单条插入
+                //daoHotel.addRoomSingle(uploadStatus.get(i));
+                uploadList.add(uploadStatus.get(i));
+                if((i != 0 && i % 30 == 0) || i == uploadStatus.size()-1 ){//每30条上传一次
+                    daoHotel.addRoomStatus(uploadList);//批量上传房态数据
+                    //清空已上传30条房态信息
+                    uploadList = null;
+                }
+            }
+        }
+        if(updateStatus.size()!=0){//待更新房态信息不是空
+            List<TCSL_PO_RoomStatus> updateList = new ArrayList<TCSL_PO_RoomStatus>();//30条更新房态列表
+            for(int i=0;i<updateStatus.size();i++){
+                updateList.add(updateStatus.get(i));
+                if((i != 0 && i % 30 == 0) || i == uploadStatus.size()-1 ){//每30条更新一次
+                    //批量更新待更新房态信息
+                    daoHotel.updateRoomStatus(updateList);
+                    //清空已更新的30条房态信息
+                    updateList = null ;
+                }
+            }
+        }
+        if(uploadStateDetails.size()!=0){//待上传房态详情表不为空
+            List<TCSL_PO_ProductStatusDt> uploadStateData = new ArrayList<TCSL_PO_ProductStatusDt>();//30条上传房态详情列表
+            for (int i = 0 ; i < uploadStateDetails.size() ;i++){
+                uploadStateData.add(uploadStateDetails.get(i));
+                if((i != 0 && i % 30 == 0) || i == uploadStateDetails.size()-1){
+                    //批量上传房态详情(先删除，在插入)
+                    daoHotel.addRoomStatusDetail(uploadStateData);
+                    //清空已上传的30条房态信息
+                    uploadStateData = null;
+                }
+            }
+        }
+    }
     /**
      * 创建上传房态soapXml
      * @param hotelCode 酒店编码

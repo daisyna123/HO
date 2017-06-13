@@ -241,7 +241,7 @@
         AND
         CROOMTYPEID = #{CROOMTYPEID}
     </select>
-    <select id="getRoomState" resultType="TCSL_PO_RoomStatus">
+    <select id="getRoomState" resultType="com.po.TCSL_PO_RoomStatus">
         SELECT
             CSHOPID,
             CCHANNEL,
@@ -257,18 +257,39 @@
         AND CCHANNEL = #{CCHANNEL}
         AND CPLANID = #{CPLANID}
     </select>
-    <delete id="delRoomState">
-        delete
+    <insert id="addRoomStatus" parameterType="com.po.TCSL_PO_RoomStatus">
+        INSERT INTO OTA_BSC_PRODUCT_STATUS (
+        CSHOPID,
+        CCHANNEL,
+        CPLANID,
+        CPLANNAME,
+        DTUPLOAD
+        )
+    <foreach collection = "roomStatus" item="item"  separator="UNION ALL">
+        ( SELECT
+        #{item.CSHOPID},
+        #{item.CCHANNEL},
+        #{item.CPLANID},
+        #{item.CPLANNAME},
+        SYSDATE
         FROM
-            OTA_BSC_PRODUCT_STATUSDT
-        WHERE
-            CPLANID=#{CPLANID}
-        AND
-          CROOMTYPEID=#{CROOMTYPEID}
-    </delete>
-
-    <insert id="addRoomStatus" parameterType="com.vo.TCSL_VO_RSItem">
-
+        DUAL)
+    </foreach >
+    </insert>
+    <insert id="addRoomSingle" parameterType="com.po.TCSL_PO_RoomStatus">
+      INSERT INTO OTA_BSC_PRODUCT_STATUS (
+        CSHOPID,
+        CCHANNEL,
+        CPLANID,
+        CPLANNAME,
+        DTUPLOAD
+        )VALUES (
+        #{roomStatus.CSHOPID},
+        #{roomStatus.CCHANNEL},
+        #{roomStatus.CPLANID},
+        #{roomStatus.CPLANNAME},
+         SYSDATE
+        )
     </insert>
     <select id="getActivity" resultType="com.po.TCSL_PO_ProductActivity">
         SELECT
@@ -286,4 +307,43 @@
         AND product.CCHANNEL = #{CCHANNEL}
         AND product.CROOMTYPEID = #{CROOMTYPEID}
     </select>
+    <update id="updateRoomStatus" parameterType="java.util.List">
+        <foreach collection="roomStatus" item="item" index="index" open="begin" close=";end;" separator = "union all">
+            UPDATE OTA_BSC_PRODUCT_STATUS
+            SET CPLANNAME = #{item.CPLANNAME},
+            DTUPLOAD = SYSDATE
+            WHERE
+            CSHOPID = #{item.CSHOPID}
+            AND
+            CCHANNEL = #{item.CCHANNEL}
+            AND
+            CPLANID = #{item.CPLANID}
+        </foreach>
+    </update>
+    <insert id="addRoomStatusDetail" parameterType="java.util.List">
+        <foreach collection = "roomStatusDetail" item = "item"  separator = "union all">
+            DELETE
+            FROM
+            OTA_BSC_PRODUCT_STATUSDT
+            WHERE
+            CPLANID = #{item.CPLANID}
+            AND CROOMTYPEID = #{item.CROOMTYPEID};
+
+            INSERT INTO OTA_BSC_PRODUCT_STATUSDT (
+            CPLANID,
+            CROOMTYPEID,
+            DBTIME,
+            DETIME,
+            IROOMSTATUS
+            )
+            VALUES
+            (
+            #{item.CPLANID},
+            #{item.CROOMTYPEID},
+            #{item.DBTIME},
+            #{item.DETIME},
+            #{item.IROOMSTATUS}
+            );
+        </foreach>
+    </insert>
 </mapper>
