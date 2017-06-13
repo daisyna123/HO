@@ -197,4 +197,10 @@ public interface TCSL_DAO_Hotel {
     public void addRoomStatusDetail(
             @Param("roomStatusDetail") List<TCSL_PO_ProductStatusDt> roomStatusDetail
     );
+
+    /**
+     *  查询所有未上传OTA房态信息
+     * @return
+     */
+    public List<TCSL_PO_RsEqualize> getUnUploadRs( );
 }

@@ -2,6 +2,7 @@ package com.rest;
 import com.bo.TCSL_BO_Hotel;
 import com.util.TCSL_UTIL_COMMON;
 import com.util.TCSL_UTIL_RESOURCE;
+import com.util.TCSL_UTIL_RSEqualize;
 import com.vo.TCSL_VO_HotelInfo;
 import com.vo.TCSL_VO_Result;
 import com.vo.TCSL_VO_RoomPrice;
@@ -69,7 +70,15 @@ public class TCSL_REST_Hotel {
     public TCSL_VO_Result uploadRoomStatus(@RequestBody TCSL_VO_RoomStatus roomStatus){
         logger.info("参数解析进入uploadRoomStatus()");
         TCSL_VO_Result result = new TCSL_VO_Result();
-        if(roomStatus == null){
+        /**
+         * 测试线程启停
+         * if(TCSL_UTIL_COMMON.rsEqualize == null || "TERMINATED".equals(TCSL_UTIL_COMMON.rsEqualize.getState().toString())){
+                System.out.println("新创建补偿线程---start---");
+                TCSL_UTIL_COMMON.rsEqualize = new TCSL_UTIL_RSEqualize();
+                TCSL_UTIL_COMMON.rsEqualize.start();
+            }
+         */
+        /*if(roomStatus == null){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
@@ -93,7 +102,7 @@ public class TCSL_REST_Hotel {
             return result;
         }
         //调用bo层上传酒店房态逻辑处理
-        result = boHotel.uploadRoomStatus(roomStatus);
+        result = boHotel.uploadRoomStatus(roomStatus);*/
         return result;
     }
     /**
@@ -104,13 +113,6 @@ public class TCSL_REST_Hotel {
     public TCSL_VO_Result uploadRoomPrice(@RequestBody TCSL_VO_RoomPrice roomPrice){
         logger.info("进入rest---uploadRoomPrice()解析参数");
         TCSL_VO_Result result = new TCSL_VO_Result();
-        if(roomPrice == null){
-            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
-            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
-            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
-            logger.info("房价参数不全！");
-            return result;
-        }
         logger.debug("参数:价格方案代码-"+roomPrice.getHotelCode());
         //执行上传房价相关逻辑
         result = boHotel.uploadRoomPrice(roomPrice);

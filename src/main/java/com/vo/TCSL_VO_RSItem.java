@@ -1,5 +1,6 @@
 package com.vo;
 import com.po.TCSL_PO_ProductActivity;
+import com.po.TCSL_PO_RsEqualize;
 
 import java.util.List;
 /**
@@ -74,6 +75,22 @@ public class TCSL_VO_RSItem {
 
     public TCSL_VO_RSItem(){};
 
+    public TCSL_VO_RSItem (TCSL_PO_RsEqualize poRsEqualize){
+        this.start = poRsEqualize.getDBTIME();
+        this.end = poRsEqualize.getDETIME();
+        this.invTypeCode = poRsEqualize.getCROOMTYPEID();
+        this.ratePlanCode = poRsEqualize.getCACTIVITYID();
+        this.ratePlanName = poRsEqualize.getCACTIVITYNAME(); //线上活动方案名称
+        this.mon = "1";
+        this.tue = "1";
+        this.weds = "1";
+        this.thur = "1";
+        this.fri = "1";
+        this.sat = "1";
+        this.sun = "1";
+        this.restriction = "Master";
+        this.status = poRsEqualize.getIROOMSTATUS();
+    }
     public TCSL_VO_RSItem(TCSL_VO_RSItem rsItem,TCSL_PO_ProductActivity activity){
         this.start = rsItem.getStart();
         this.end = rsItem.getEnd();
@@ -221,30 +238,34 @@ public class TCSL_VO_RSItem {
         this.status = status;
     }
 
+    /**
+     * 对象相等判断条件
+     * 房态生效时间 start
+     * 房态结束时间 end
+     * 房型 invTypeCode
+     * 线上活动方案编码 ratePlanCode
+     * 线上活动方案名称 ratePlanName
+     * 权限 restriction
+     * 房态 status
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TCSL_VO_RSItem)) return false;
 
-        TCSL_VO_RSItem that = (TCSL_VO_RSItem) o;
+        TCSL_VO_RSItem rsItem = (TCSL_VO_RSItem) o;
 
-        if (start != null ? !start.equals(that.start) : that.start != null) return false;
-        if (end != null ? !end.equals(that.end) : that.end != null) return false;
-        if (invTypeCode != null ? !invTypeCode.equals(that.invTypeCode) : that.invTypeCode != null) return false;
-        if (ratePlanCode != null ? !ratePlanCode.equals(that.ratePlanCode) : that.ratePlanCode != null) return false;
-        if (ratePlanName != null ? !ratePlanName.equals(that.ratePlanName) : that.ratePlanName != null) return false;
-        if (mon != null ? !mon.equals(that.mon) : that.mon != null) return false;
-        if (tue != null ? !tue.equals(that.tue) : that.tue != null) return false;
-        if (weds != null ? !weds.equals(that.weds) : that.weds != null) return false;
-        if (thur != null ? !thur.equals(that.thur) : that.thur != null) return false;
-        if (fri != null ? !fri.equals(that.fri) : that.fri != null) return false;
-        if (sat != null ? !sat.equals(that.sat) : that.sat != null) return false;
-        if (sun != null ? !sun.equals(that.sun) : that.sun != null) return false;
-        if (destinationSystemCodes != null ? !destinationSystemCodes.equals(that.destinationSystemCodes) : that.destinationSystemCodes != null)
+        if (start != null ? !start.equals(rsItem.start) : rsItem.start != null) return false;
+        if (end != null ? !end.equals(rsItem.end) : rsItem.end != null) return false;
+        if (invTypeCode != null ? !invTypeCode.equals(rsItem.invTypeCode) : rsItem.invTypeCode != null) return false;
+        if (ratePlanCode != null ? !ratePlanCode.equals(rsItem.ratePlanCode) : rsItem.ratePlanCode != null)
             return false;
-        if (restriction != null ? !restriction.equals(that.restriction) : that.restriction != null) return false;
-        if (status != null ? !status.equals(that.status) : that.status != null) return false;
-        return removeFlg != null ? removeFlg.equals(that.removeFlg) : that.removeFlg == null;
+        if (ratePlanName != null ? !ratePlanName.equals(rsItem.ratePlanName) : rsItem.ratePlanName != null)
+            return false;
+        if (restriction != null ? !restriction.equals(rsItem.restriction) : rsItem.restriction != null) return false;
+        return status != null ? status.equals(rsItem.status) : rsItem.status == null;
     }
 
     @Override
@@ -254,17 +275,8 @@ public class TCSL_VO_RSItem {
         result = 31 * result + (invTypeCode != null ? invTypeCode.hashCode() : 0);
         result = 31 * result + (ratePlanCode != null ? ratePlanCode.hashCode() : 0);
         result = 31 * result + (ratePlanName != null ? ratePlanName.hashCode() : 0);
-        result = 31 * result + (mon != null ? mon.hashCode() : 0);
-        result = 31 * result + (tue != null ? tue.hashCode() : 0);
-        result = 31 * result + (weds != null ? weds.hashCode() : 0);
-        result = 31 * result + (thur != null ? thur.hashCode() : 0);
-        result = 31 * result + (fri != null ? fri.hashCode() : 0);
-        result = 31 * result + (sat != null ? sat.hashCode() : 0);
-        result = 31 * result + (sun != null ? sun.hashCode() : 0);
-        result = 31 * result + (destinationSystemCodes != null ? destinationSystemCodes.hashCode() : 0);
         result = 31 * result + (restriction != null ? restriction.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (removeFlg != null ? removeFlg.hashCode() : 0);
         return result;
     }
 }
