@@ -7,6 +7,14 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +68,6 @@ public class TCSL_BO_Test1 {
                 "</soap:Header>\n" +
                 "<soap:Body>\n" +
                 "   <web:Translator>\n" +
-                "         <!--Optional:-->\n" +
                 "         <web:wordKey>翻译</web:wordKey>\n" +
                 "      </web:Translator>\n" +
                 "</soap:Body>\n" +
@@ -85,11 +92,50 @@ public class TCSL_BO_Test1 {
             byte[] responseBody = postMethod.getResponseBody();
             //处理内容
             System.out.println("responseBody------"+new String(responseBody));
+            //TCSL_UTIL_XML.xmlTojavaBean(,soapData);
         } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("返回的结果：------------------"+soapData);
         // 调用请求END
+       /* // 1.创建httpClient客户端
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        // 2.获取http post
+        HttpPost httppost = new HttpPost("http://fy.webxml.com.cn/webservices/EnglishChinese.asmx");
+        // 3.设置发送请求的字符集编码
+       // httppost.addHeader("Content-Type", "application/x-www-form-urlencoded; charset=" + "utf-8");
+          // 4.把SOAP请求数据添加到http post方法中,此方式也可实现，处理方式可能有点绕
+        byte[] by = new byte[0];
+        try {
+            by = soapData.getBytes("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        InputStream inputStream = new ByteArrayInputStream(by, 0, by.length);
+        //实例化输入流请求实体:使用HttpClient测试Soap接口比较特殊;服务端可能是以IO流的形式接收数据的，此处先作此定论，后续再做研究
+        InputStreamEntity reqEntity = new InputStreamEntity(inputStream,by.length);
+        //设置http请求实体,将请求的String数据转换成StringEntity实体，一定要指定字符集编码
+        //StringEntity reqEntity = new StringEntity(soapData,"utf-8");
+        httppost.setEntity(reqEntity);
+        // 5.执行http post请求
+        HttpResponse response = null;
+        try {
+            response = httpclient.execute(httppost);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 6.获取服务端返回的状态码
+        int statuscode = response.getStatusLine().getStatusCode();
+        // 7.获取服务器的返回实体
+        HttpEntity entity = response.getEntity();
+        String responseMsg = null;
+        try {
+            responseMsg = EntityUtils.toString(entity);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("返回的状态码与响应结果:" + statuscode + ":" + responseMsg);*/
     }
     /**
      * 测试javabean转为soap类型xml

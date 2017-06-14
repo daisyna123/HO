@@ -26,8 +26,8 @@ public class TCSL_UTIL_COMMON {
     public static int equalizeNum = 0; //上传OTA补偿次数
     /**
      * 上传OTA熔断标志
-     * true 停止线下上传OTA数据
-     * false 不停止线下上传OTA数据
+     * true 停止线下，上传OTA数据
+     * false 不停止线下，上传OTA数据
      */
     public static boolean uploadFusingFlag = false;
 
@@ -38,10 +38,10 @@ public class TCSL_UTIL_COMMON {
     public static TCSL_UTIL_RSEqualize rsEqualize = null; //房态补偿线程
     @PostConstruct
     public  void  init(){
-        if(rsEqualize == null){
-            rsEqualize = new TCSL_UTIL_RSEqualize();
-        }
-        rsEqualize.start();
+//        if(rsEqualize == null){
+//            rsEqualize = new TCSL_UTIL_RSEqualize();
+//        }
+//        rsEqualize.start();
     }
 
 
