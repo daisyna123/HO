@@ -78,7 +78,7 @@ public class TCSL_REST_Hotel {
                 TCSL_UTIL_COMMON.rsEqualize.start();
             }
          */
-        /*if(roomStatus == null){
+        if(roomStatus == null){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
@@ -102,7 +102,7 @@ public class TCSL_REST_Hotel {
             return result;
         }
         //调用bo层上传酒店房态逻辑处理
-        result = boHotel.uploadRoomStatus(roomStatus);*/
+        result = boHotel.uploadRoomStatus(roomStatus);
         return result;
     }
     /**

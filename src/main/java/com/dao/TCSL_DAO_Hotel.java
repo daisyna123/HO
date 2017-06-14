@@ -138,13 +138,13 @@ public interface TCSL_DAO_Hotel {
     );
 
     /**
-     * 获取酒店产品不同支付方式的记录（根据酒店代码、渠道、房型代码）
+     * 获取酒店不同支付方式的产品记录（根据酒店代码、渠道、房型代码）
      * @param CSHOPID
      * @param CCHANNEL
      * @param CROOMTYPEID
      * @return
      */
-    public List<TCSL_PO_HotelProduct> getProductStatus(
+    public List<TCSL_PO_HotelProduct> getProductExceptChannel(
             @Param("CSHOPID") String CSHOPID,
             @Param("CCHANNEL") String CCHANNEL,
             @Param("CROOMTYPEID") String CROOMTYPEID
@@ -168,7 +168,7 @@ public interface TCSL_DAO_Hotel {
      */
     public void addRoomStatus(
             @Param("roomStatus")List<TCSL_PO_RoomStatus> roomStatus
-            );
+    );
 
     /**
      * 单个添加房态主表信息
@@ -191,10 +191,18 @@ public interface TCSL_DAO_Hotel {
     );
 
     /**
-     *批量上传房态详情(先删除，在插入)
+     *批量上传房态详情
      * @param roomStatusDetail
      */
     public void addRoomStatusDetail(
+            @Param("roomStatusDetail") List<TCSL_PO_ProductStatusDt> roomStatusDetail
+    );
+
+    /**
+     * 批量删除房态详情
+     * @param roomStatusDetail
+     */
+    public void delRoomStatusDetail(
             @Param("roomStatusDetail") List<TCSL_PO_ProductStatusDt> roomStatusDetail
     );
 

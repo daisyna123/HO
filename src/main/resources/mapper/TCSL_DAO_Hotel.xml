@@ -224,7 +224,7 @@
         AND
             CPAYTYPE = #{CPAYTYPE}
     </select>
-    <select id="getProductStatus" resultType="com.po.TCSL_PO_HotelProduct">
+    <select id="getProductExceptChannel" resultType="com.po.TCSL_PO_HotelProduct">
         SELECT
         CSHOPID,
         CCHANNEL,
@@ -257,23 +257,24 @@
         AND CCHANNEL = #{CCHANNEL}
         AND CPLANID = #{CPLANID}
     </select>
-    <insert id="addRoomStatus" parameterType="com.po.TCSL_PO_RoomStatus">
+    <insert id="addRoomStatus" parameterType="java.util.List">
         INSERT INTO OTA_BSC_PRODUCT_STATUS (
         CSHOPID,
         CCHANNEL,
         CPLANID,
         CPLANNAME,
+        IDELFLG,
         DTUPLOAD
+        ) VALUES
+    <foreach collection = "roomStatus" item="item" separator=",">
+        (
+        #{item.CSHOPID,jdbcType=VARCHAR},
+        #{item.CCHANNEL,jdbcType=VARCHAR},
+        #{item.CPLANID,jdbcType=VARCHAR},
+        #{item.CPLANNAME,jdbcType=VARCHAR},
+        #{item.IDELFLG,jdbcType=INTEGER},
+        sysdate
         )
-    <foreach collection = "roomStatus" item="item"  separator="UNION ALL">
-        ( SELECT
-        #{item.CSHOPID},
-        #{item.CCHANNEL},
-        #{item.CPLANID},
-        #{item.CPLANNAME},
-        SYSDATE
-        FROM
-        DUAL)
     </foreach >
     </insert>
     <insert id="addRoomSingle" parameterType="com.po.TCSL_PO_RoomStatus">
@@ -332,27 +333,22 @@
         AND product.CCHANNEL = activity.CCHANNEL
     </select>
     <update id="updateRoomStatus" parameterType="java.util.List">
-        <foreach collection="roomStatus" item="item" index="index" open="begin" close=";end;" separator = "union all">
+
+        <foreach collection="roomStatus" item="item" index="index" open="" close="" separator = ";">
             UPDATE OTA_BSC_PRODUCT_STATUS
-            SET CPLANNAME = #{item.CPLANNAME},
+            SET CPLANNAME = #{item.CPLANNAME,jdbcType=VARCHAR},
+            IDELFLG = #{item.IDELFLG,jdbcType=INTEGER},
             DTUPLOAD = SYSDATE
             WHERE
-            CSHOPID = #{item.CSHOPID}
+            CSHOPID = #{item.CSHOPID,jdbcType=VARCHAR}
             AND
-            CCHANNEL = #{item.CCHANNEL}
+            CCHANNEL = #{item.CCHANNEL,jdbcType=VARCHAR}
             AND
-            CPLANID = #{item.CPLANID}
+            CPLANID = #{item.CPLANID,jdbcType=VARCHAR}
         </foreach>
     </update>
     <insert id="addRoomStatusDetail" parameterType="java.util.List">
-        <foreach collection = "roomStatusDetail" item = "item"  separator = "union all">
-            DELETE
-            FROM
-            OTA_BSC_PRODUCT_STATUSDT
-            WHERE
-            CPLANID = #{item.CPLANID}
-            AND CROOMTYPEID = #{item.CROOMTYPEID};
-
+        <foreach collection = "roomStatusDetail" item = "item"  separator = ";">
             INSERT INTO OTA_BSC_PRODUCT_STATUSDT (
             CPLANID,
             CROOMTYPEID,
@@ -362,12 +358,22 @@
             )
             VALUES
             (
-            #{item.CPLANID},
-            #{item.CROOMTYPEID},
-            #{item.DBTIME},
-            #{item.DETIME},
-            #{item.IROOMSTATUS}
-            );
+            #{item.CPLANID,jdbcType=VARCHAR},
+            #{item.CROOMTYPEID,jdbcType=VARCHAR},
+            #{item.DBTIME,jdbcType=DATE},
+            #{item.DETIME,jdbcType=DATE},
+            #{item.IROOMSTATUS,jdbcType=INTEGER}
+            )
         </foreach>
     </insert>
+    <delete id="delRoomStatusDetail" parameterType="java.util.List">
+        <foreach collection = "roomStatusDetail" item = "item"  separator = ";">
+            DELETE
+            FROM
+            OTA_BSC_PRODUCT_STATUSDT
+            WHERE
+            CPLANID = #{item.CPLANID}
+            AND CROOMTYPEID = #{item.CROOMTYPEID}
+        </foreach>
+    </delete>
 </mapper>
