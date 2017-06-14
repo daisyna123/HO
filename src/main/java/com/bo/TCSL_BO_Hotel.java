@@ -9,10 +9,7 @@ import com.vo.*;
 
 import com.xml.TCSL_XML_PMSHotelMappingResult;
 import com.xml.TCSL_XML_PmsHotelInfoRS;
-import org.apache.axiom.om.OMAbstractFactory;
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.OMFactory;
-import org.apache.axiom.om.OMNamespace;
+import org.apache.axiom.om.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -422,6 +419,7 @@ public class TCSL_BO_Hotel {
         //2.2将数据转换成soapXML
         Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
         OMElement soapXml = createRsXml(roomStatus.getHotelCode(),list,p);
+        System.out.println("整合xml-----"+soapXml.toString());
         //2.3发送soap请求,成功返回成功，失败启动补偿线程
         //TODO
 
@@ -491,6 +489,9 @@ public class TCSL_BO_Hotel {
         OMNamespace nameSpaceXsi =  factory.createOMNamespace(nameSpaceXsiProperty,"xsi");
         //创建xml节点
         OMElement OTA_HotelAvailNotifRQ = factory.createOMElement("PmsHotelInfoRQ",namespace);
+        OMElement AvailStatusMessages = factory.createOMElement("AvailStatusMessages",null);
+        AvailStatusMessages.addAttribute("HotelCode","酒店编码",null);
+        OTA_HotelAvailNotifRQ.addChild(AvailStatusMessages);
         //TODO
         return OTA_HotelAvailNotifRQ;
     }
