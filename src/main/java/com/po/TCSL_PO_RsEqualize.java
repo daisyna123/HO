@@ -12,6 +12,8 @@ public class TCSL_PO_RsEqualize {
     private String DBTIME;
     private String DETIME;
     private String IROOMSTATUS;
+    private String CPLANID; //线下房态方案编码
+    private String DTUPLOAD; //线下房态方案上传O2O时间
 
     public String getCSHOPID() {
         return CSHOPID;
@@ -75,5 +77,21 @@ public class TCSL_PO_RsEqualize {
 
     public void setIROOMSTATUS(String IROOMSTATUS) {
         this.IROOMSTATUS = IROOMSTATUS;
+    }
+
+    public String getCPLANID() {
+        return CPLANID;
+    }
+
+    public void setCPLANID(String CPLANID) {
+        this.CPLANID = CPLANID;
+    }
+
+    public String getDTUPLOAD() {
+        return DTUPLOAD;
+    }
+
+    public void setDTUPLOAD(String DTUPLOAD) {
+        this.DTUPLOAD = DTUPLOAD;
     }
 }

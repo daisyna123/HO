@@ -315,18 +315,17 @@
             statusDT.CROOMTYPEID,
             activity.CACTIVITYID,
             activity.CACTIVITYNAME,
-            TO_CHAR(statusDT.DBTIME),
-            TO_CHAR(statusDT.DETIME),
-            statusDT.IROOMSTATUS
-
+            statusDT.DBTIME,
+            statusDT.DETIME,
+            statusDT.IROOMSTATUS,
+            status.CPLANID,
+            status.DTUPLOAD
         FROM
             OTA_BSC_PRODUCT_STATUS status
         INNER JOIN OTA_BSC_PRODUCT_STATUSDT statusDT ON status.CPLANID = statusDT.CPLANID
         AND status.DTUPLOAD > status.DTOTAUPLOAD
-        AND status.IDELFLG = 0
-        --查询所有未上传房态 end
-        INNER JOIN OTA_BSC_PRODUCT product ON status.CSHOPID = product.CSHOPID
-        --过滤未创建成功产品的房态信息
+        AND status.IDELFLG = 0 --查询所有未上传房态 end
+        INNER JOIN OTA_BSC_PRODUCT product ON status.CSHOPID = product.CSHOPID --过滤未创建成功产品的房态信息
         AND status.CCHANNEL = product.CCHANNEL
         AND statusDT.CROOMTYPEID = product.CROOMTYPEID
         LEFT JOIN OTA_BSC_PRODUCT_ACTIVITY activity ON product.CPAYTYPE = activity.CPAYTYPE
@@ -376,4 +375,13 @@
             AND CROOMTYPEID = #{item.CROOMTYPEID}
         </foreach>
     </delete>
+    <update id="updateRsOtaTime">
+            UPDATE OTA_BSC_PRODUCT_STATUS
+            SET DTOTAUPLOAD = SYSDATE
+            WHERE
+            CSHOPID = #{hotelCode}
+            AND CPLANID = #{planId}
+            AND CCHANNEL = #{channel}
+            AND DTUPLOAD = TO_DATE(#{DTUPLOAD}, 'YYYY-MM-DD HH24:mi:ss')
+    </update>
 </mapper>

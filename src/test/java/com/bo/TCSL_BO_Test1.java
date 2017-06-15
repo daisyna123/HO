@@ -6,6 +6,15 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
+import org.apache.axiom.om.impl.OMElementEx;
+import org.apache.axiom.soap.SOAPEnvelope;
+import org.apache.axis2.AxisFault;
+import org.apache.axis2.Constants;
+import org.apache.axis2.addressing.EndpointReference;
+import org.apache.axis2.client.OperationClient;
+import org.apache.axis2.client.Options;
+import org.apache.axis2.client.ServiceClient;
+import org.apache.axis2.context.MessageContext;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -92,7 +101,6 @@ public class TCSL_BO_Test1 {
             byte[] responseBody = postMethod.getResponseBody();
             //处理内容
             System.out.println("responseBody------"+new String(responseBody));
-            //TCSL_UTIL_XML.xmlTojavaBean(,soapData);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -214,5 +222,29 @@ public class TCSL_BO_Test1 {
         String url = "http://fy.webxml.com.cn/webservices/EnglishChinese.asmx";
         String soapAction = "http://WebXml.com.cn/Translator";
         TCSL_UTIL_XML.sendSoap(url,soapAction,transTag);
+    }
+
+    /**
+     * 测试soap请求
+     * <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" >
+     <soapenv:Header/>
+     <soapenv:Body>
+     <web:Translator xmlns:web="http://WebXml.com.cn/">
+     <web:wordKey>#7￥</web:wordKey></web:Translator>
+     </soapenv:Body>
+     </soapenv:Envelope>
+
+     */
+    @Test
+    public void testUtilXmlSoap(){
+        OMFactory factory = OMAbstractFactory.getOMFactory();
+        OMNamespace namespaceWeb= factory.createOMNamespace("http://WebXml.com.cn/","web");
+        OMElement Translator = factory.createOMElement("Translator",namespaceWeb);
+        OMElement wordKey = factory.createOMElement("wordKey",null);
+        wordKey.setText("name");
+        Translator.addChild(wordKey);
+        String result= TCSL_UTIL_XML.sendSoap("http://fy.webxml.com.cn/webservices/EnglishChinese.asmx",
+                "http://WebXml.com.cn/Translator",Translator);
+        System.out.println("发送soap请求结果------------"+result);
     }
 }
