@@ -50,5 +50,7 @@
         2. 允许使用 "/" 做整体映射 -->
     <mvc:default-servlet-handler/>
     <!-- 扫描 web 相关的 bean -->
+    <!-- 创建手动获取bean工具类 -->
+    <bean id="springContext" class="com.util.TCSL_UTIL_SpringContext"></bean>
     <context:component-scan base-package="com" />
 </beans>

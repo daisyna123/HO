@@ -3,36 +3,38 @@ package com.util;
 
 import com.bo.TCSL_BO_Hotel;
 import com.dao.TCSL_DAO_Hotel;
+import com.po.TCSL_PO_RoomStatus;
 import com.po.TCSL_PO_RsEqualize;
 import com.vo.TCSL_VO_RSItem;
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * 上传OTA房态补偿线程
  * Created by zhangtuoyu on 2017/6/12.
  */
-@Repository
 public class TCSL_UTIL_RSEqualize extends Thread{
-    @Autowired
-    private TCSL_DAO_Hotel daoHotel;
     private Logger logger = Logger.getLogger(TCSL_UTIL_RSEqualize.class);
-    @Autowired
-    private TCSL_BO_Hotel boHotel;
+    private TCSL_DAO_Hotel daoHotel = (TCSL_DAO_Hotel)TCSL_UTIL_SpringContext.getBeanByClass(TCSL_DAO_Hotel.class);
+    private TCSL_BO_Hotel boHotel = (TCSL_BO_Hotel)TCSL_UTIL_SpringContext.getBeanByClass(TCSL_BO_Hotel.class);
     @Override
     public void run() {
-        while (!TCSL_UTIL_COMMON.uploadFusingFlag){
-            logger.info("TCSL_UTIL_RSEqualize is running");
+        while (!TCSL_UTIL_COMMON.rsEqualize.isInterrupted()){
+            logger.info("TCSL_UTIL_RSEqualize is running ");
             try {
                 /**
                  * 1.获取所有未上传成功房态数据列表
                  * 2.转换为TCSL_VO_RoomStatus列表(可能存在多个酒店的为上传成功房态)
                  */
                 List<TCSL_PO_RsEqualize> unuploadRs = daoHotel.getUnUploadRs();
+                //没有待补偿上传数据,停止补偿线程
+                if(unuploadRs == null || unuploadRs.size() == 0){
+                    TCSL_UTIL_COMMON.rsEqualize.interrupt();
+                }
                 Map<String,List<TCSL_VO_RSItem>> map = new HashMap<String,List<TCSL_VO_RSItem>>(); // key 酒店编码,value 酒店待处理房态数据列表
                 for(TCSL_PO_RsEqualize poRsEqualize:unuploadRs){
                     String hotelCode = poRsEqualize.getCSHOPID(); //酒店编码
@@ -62,53 +64,55 @@ public class TCSL_UTIL_RSEqualize extends Thread{
                     }
                 }
                 Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
-                long fuseTime = Long.parseLong(p.getProperty("ota_fusing_time")) * 60 * 1000; //熔断恢复时间(ms)
-                int equalizeNum = Integer.parseInt(p.getProperty("ota_equalize_num")); //补偿次数
-
                 /**
-                 * 3.转换成soapXml
+                 * 3.转换成soapXml,发送soap请求
                  */
                 Set<String> keySet = map.keySet();
                 Iterator<String> ite = keySet.iterator();
                 while (ite.hasNext()){ //挨个处理每个酒店的待上传房态
                     String hotelCode = ite.next();
                     List<TCSL_VO_RSItem> items = map.get(hotelCode);
+                    //创建xml数据
                     OMElement OTA_HotelAvailNotifRQ = boHotel.createRsXml(hotelCode,items,p);
-                    /**
-                     * 1.发送soap请求
-                     * 1.发送成功 修改数据库相关数据上传ota时间，重置补偿次数、熔断标志
-                     * 2.发送失败 判断补偿次数是否达到指定数
-                     * 2.1 没达到：程序继续执行
-                     * 2.2 达到:熔断标志改为true,暂停指定时间
-                     */
                     //发送soap请求
-                    //TODO
-                    //发送成功
-                    TCSL_UTIL_COMMON.equalizeNum = 0;
-                    TCSL_UTIL_COMMON.uploadFusingFlag = false;
-                    //TODO
-                    //发送失败
-                    TCSL_UTIL_COMMON.equalizeNum = TCSL_UTIL_COMMON.equalizeNum + 1;
-                    if(TCSL_UTIL_COMMON.equalizeNum == equalizeNum){
-                        TCSL_UTIL_COMMON.uploadFusingFlag = true;
-                        break;
+                    String url = p.getProperty("ota_uploadRoomStatus_url");
+                    String soapStr = TCSL_UTIL_XML.sendSoap(url,"",OTA_HotelAvailNotifRQ);
+                    if(!"".equals(soapStr)){
+                        /**
+                         * 将线上活动列表聚合出线下房态方案列表
+                         */
+                        Set<TCSL_PO_RoomStatus> rsSet = new HashSet<TCSL_PO_RoomStatus>(); //待更新OTA上传时间 房态方案列表
+                        for (TCSL_VO_RSItem item : items) {
+                            TCSL_PO_RoomStatus roomStatus = new TCSL_PO_RoomStatus();
+                            roomStatus.setCSHOPID(hotelCode);
+                            roomStatus.setCPLANID(item.getCPLANID());
+                            DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Date date = sdf.parse(item.getDTUPLOAD());
+                            roomStatus.setDTUPLOAD(date);
+                            for(String channel : item.getDestinationSystemCodes()){
+                                roomStatus.setCCHANNEL(channel);
+                                rsSet.add(roomStatus);
+                            }
+                        }
+                        /**
+                         * 批量更新房态方案上传OTA时间
+                         */
+                        //将房态数据按渠道拆分
+                        Iterator<TCSL_PO_RoomStatus> rsIte = rsSet.iterator();
+                        while (rsIte.hasNext()){
+                            TCSL_PO_RoomStatus poRoomStatus = rsIte.next();
+                            String shopId = poRoomStatus.getCSHOPID();
+                            String planId = poRoomStatus.getCPLANID();
+                            String channel = poRoomStatus.getCCHANNEL();
+                            Date dtUpload = poRoomStatus.getDTUPLOAD();
+                            String dtUploadStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dtUpload);
+                            daoHotel.updateRsOtaTime(shopId,planId,channel,dtUploadStr);
+                        }
                     }
                 }
-                /**
-                 * 补偿逻辑执行完成
-                 * 1.所有数据补偿成功,中断线程
-                 * 2.达到熔断次数，熔断标记为true,暂停补偿
-                 * 3.未达到熔断次数，继续尝试补偿,继续补偿
-                 */
-                if(TCSL_UTIL_COMMON.uploadFusingFlag == false && TCSL_UTIL_COMMON.equalizeNum == 0){
-                    TCSL_UTIL_COMMON.rsEqualize.interrupt();
-                }
-                if(TCSL_UTIL_COMMON.uploadFusingFlag == true){
-                    sleep(fuseTime); //线程暂停补偿
-                }
-
             }catch (Exception e){
                 logger.info("TCSL_UTIL_RSEqualize is interrupted");
+                e.printStackTrace();
                 TCSL_UTIL_COMMON.rsEqualize.interrupt();
             }
         }

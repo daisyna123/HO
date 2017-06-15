@@ -1,5 +1,8 @@
 package com.util;
+import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.om.OMNamespace;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.addressing.EndpointReference;
 import org.apache.axis2.client.Options;
@@ -20,6 +23,7 @@ import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Properties;
 
 /**
  * @DESCRIPTION 读取SOAP，实现bean与xml间的转换
@@ -37,7 +41,10 @@ public class TCSL_UTIL_XML {
      */
     public static  String sendSoap(String URL,String soapAction,OMElement data){
        logger.info("start sending soap...");
-        String resultStr = null;
+        Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
+        long timeOut = Integer.parseInt(p.getProperty("ota_fusing_time")) * 60 * 1000; //程序熔断休息时间(ms)
+        int num = Integer.parseInt(p.getProperty("ota_equalize_num")); //配置文件配置补偿次数
+        String resultStr = "";
         try {
             //axis2创建一个serviceClient
             ServiceClient serviceClient = new ServiceClient();
@@ -47,44 +54,59 @@ public class TCSL_UTIL_XML {
                 //设置SOAPAction
                 option.setAction(soapAction);
             }
-            //设置超时时间
-            long timeOut = 5*1000; //超时时间(ms)
-            option.setTimeOutInMilliSeconds(timeOut);
-
             // 指定调用WebService的URL
             EndpointReference targetEPR = new EndpointReference(URL);
             option.setTo(targetEPR);
+            option.setExceptionToBeThrownOnSOAPFault(false);
             serviceClient.setOptions(option);
             OMElement result = serviceClient.sendReceive(data);
-            resultStr = result.toString();
-            logger.info("send soap success..");
+            //判断soap通信是否成功
+            if(result == null || "".equals(result)){ //与OTA通信失败
+                logger.info("send soap fail..");
+            }else { //与OTA通信成功
+                TCSL_UTIL_COMMON.equalizeNum = 0;
+                TCSL_UTIL_COMMON.uploadFusingFlag = false;
+                resultStr = result.toString();
+                logger.info("send soap success..");
+            }
         } catch (AxisFault axisFault) {
             axisFault.printStackTrace();
+        } finally {
+            if(resultStr == null || "".equals(resultStr)){
+                sendFailOperate(num,timeOut);
+            }
+            return resultStr;
         }
-        return resultStr;
     }
-    public static  String sendSoap1(String URL,String soapAction,String soapData){
-        String resultStr = null;
-        PostMethod postMethod = new PostMethod(URL);
-        byte[] b = new byte[0];
-        try {
-            //b = soapRequestData.getBytes("utf-8");
-            b = soapData.getBytes("utf-8");
-            //ByteArrayInputStream 类从内存中的字节数组中读取数据，因此它的数据源是一个字节数组。
-            InputStream is = new ByteArrayInputStream(b,0,b.length);
-            RequestEntity re = new InputStreamRequestEntity(is,b.length,"application/soap+xml;charset=utf-8");
-            postMethod.setRequestEntity(re);
-            HttpClient httpClient = new HttpClient();
-            int statusCode = 0;
-            statusCode = httpClient.executeMethod(postMethod);
-            System.out.println("statusCode====="+statusCode);
-            //返回xml格式数据
-            resultStr =  postMethod.getResponseBodyAsString();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+    /**
+     * 发送soap请求失败操作
+     * 1.上传失败 开启补偿
+     * 2.上传失败达到熔断次数
+     * 2.1 开启熔断标志
+     * 2.2 补偿线程休息
+     * 2.3 重置补偿次数
+     * 3.上传失败没达到熔断次数
+     * 3.1补偿线程为空/补偿线程运行结束，新建补偿线程，启动补偿
+     * 3.2补偿线程不为空/线程正在运行/线程正在休息 让线程自己处理
+     */
+    public static void sendFailOperate(int num,long timeOut){
+        TCSL_UTIL_COMMON.equalizeNum = TCSL_UTIL_COMMON.equalizeNum + 1; //补偿上传次数加一
+        if(num == TCSL_UTIL_COMMON.equalizeNum){ //达到补偿次数上限
+            TCSL_UTIL_COMMON.uploadFusingFlag = true; //开启熔断标志
+            TCSL_UTIL_COMMON.equalizeNum = 0;
+            try {
+                TCSL_UTIL_COMMON.rsEqualize.sleep(timeOut); //房态补偿线程休息
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }else {
+            //房态补偿线程为空/房态补偿线程运行结束
+            String rsEqualizeState = TCSL_UTIL_COMMON.rsEqualize.getState().toString();
+            if(TCSL_UTIL_COMMON.rsEqualize == null || "TERMINATED".equals(rsEqualizeState)){
+                TCSL_UTIL_COMMON.rsEqualize = new TCSL_UTIL_RSEqualize();
+                TCSL_UTIL_COMMON.rsEqualize.start();
+            }
         }
-        return resultStr;
     }
     /**
      * 将xml转成javabean 忽略命名空间

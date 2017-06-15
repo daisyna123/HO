@@ -7,6 +7,7 @@ import com.vo.TCSL_VO_RSItem;
 import com.vo.TCSL_VO_RoomStatus;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -211,4 +212,13 @@ public interface TCSL_DAO_Hotel {
      * @return
      */
     public List<TCSL_PO_RsEqualize> getUnUploadRs( );
+    /**
+     * 批量更新房态方案上传OTA时间
+     */
+    public void updateRsOtaTime(
+            @Param("hotelCode")String hotelCode,
+            @Param("planId") String planId,
+            @Param("channel") String channel,
+            @Param("DTUPLOAD") String DTUPLOAD
+    );
 }

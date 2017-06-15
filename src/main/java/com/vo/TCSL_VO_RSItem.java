@@ -2,6 +2,7 @@ package com.vo;
 import com.po.TCSL_PO_ProductActivity;
 import com.po.TCSL_PO_RsEqualize;
 
+import java.util.ArrayList;
 import java.util.List;
 /**
  * @DESCRIPTION
@@ -58,7 +59,7 @@ public class TCSL_VO_RSItem {
      *渠道代码（携程：CTRIP，艺龙：ELONG，去哪儿:QUNAR)。
      * 该节点支持1个或多个，表示分别控制已上线的不同渠道房态
      */
-    private List<String> destinationSystemCodes;
+    private List<String> destinationSystemCodes = new ArrayList<String>();
     //权限默认为Master
     private String restriction;
     /*
@@ -72,6 +73,8 @@ public class TCSL_VO_RSItem {
      * 1:房态方案不删除
      */
     private String removeFlg;
+    private String CPLANID;
+    private String DTUPLOAD;
 
     public TCSL_VO_RSItem(){};
 
@@ -90,6 +93,8 @@ public class TCSL_VO_RSItem {
         this.sun = "1";
         this.restriction = "Master";
         this.status = poRsEqualize.getIROOMSTATUS();
+        this.CPLANID = poRsEqualize.getCPLANID();
+        this.DTUPLOAD = poRsEqualize.getDTUPLOAD();
     }
     public TCSL_VO_RSItem(TCSL_VO_RSItem rsItem,TCSL_PO_ProductActivity activity){
         this.start = rsItem.getStart();
@@ -236,6 +241,22 @@ public class TCSL_VO_RSItem {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCPLANID() {
+        return CPLANID;
+    }
+
+    public void setCPLANID(String CPLANID) {
+        this.CPLANID = CPLANID;
+    }
+
+    public String getDTUPLOAD() {
+        return DTUPLOAD;
+    }
+
+    public void setDTUPLOAD(String DTUPLOAD) {
+        this.DTUPLOAD = DTUPLOAD;
     }
 
     /**

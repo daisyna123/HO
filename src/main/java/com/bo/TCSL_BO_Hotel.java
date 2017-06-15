@@ -86,29 +86,13 @@ public class TCSL_BO_Hotel {
         String soapAction = otaProperty.getProperty("ota_uploadHotelInfo_soapAction");
         String soapResponse = TCSL_UTIL_XML.sendSoap(url,soapAction,hotelXml);
         logger.debug("uploadHotelInfo()--发送soap响应---"+soapResponse);
-        //测试数据
-        /*String soapResponse = "<PmsHotelInfoRS xmlns=\"http://www.opentravel.org/OTA/2003/05\">\n" +
-                "\t<PMSHotelMappingResults>\n" +
-                "\t\t<PMSHotelMappingResult>\n" +
-                "\t\t<Channel>Ctrip</Channel>\n" +
-                "\t\t<HotelCode>HY2403</HotelCode>\n" +
-                "\t\t<RoomTypeCode>BT2</RoomTypeCode>\n" +
-                "\t\t<RatePlanCode>P_XCB1</RatePlanCode>\n" +
-                "\t\t<IsSuccess>false</IsSuccess>\n" +
-                "\t\t<ErrorCode>101</ErrorCode>\n" +
-                "\t\t<Message>产品已经存在</Message>\n" +
-                "\t\t</PMSHotelMappingResult>\n" +
-                "\t\t<PMSHotelMappingResult>\n" +
-                "\t\t<Channel>Ctrip</Channel>\n" +
-                "\t\t<HotelCode>HY2403</HotelCode>\n" +
-                "\t\t<RoomTypeCode>BT</RoomTypeCode>\n" +
-                "\t\t<RatePlanCode>P_XCB1</RatePlanCode>\n" +
-                "\t\t<IsSuccess>false</IsSuccess>\n" +
-                "\t\t<ErrorCode>101</ErrorCode>\n" +
-                "\t\t<Message>产品已经存在</Message>\n" +
-                "\t\t</PMSHotelMappingResult>\n" +
-                "\t</PMSHotelMappingResults>\n" +
-                "</PmsHotelInfoRS>\n";*/
+        //判断上传OTA是否成功
+        if("".equals(soapResponse)){
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTA);//401
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTA);//上传OTA失败信息
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL); //失败
+            return result;
+        }
         //将soapResponse转换成bean对象
         TCSL_XML_PmsHotelInfoRS productResult = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_PmsHotelInfoRS.class,soapResponse);
         //判断是否创建失败
@@ -170,6 +154,17 @@ public class TCSL_BO_Hotel {
         //遍历解析产品创建结果列表
         for (TCSL_XML_PMSHotelMappingResult xmlProductResult:productResult){
             if(productResult == null){
+                continue;
+            }
+            String errorCode = xmlProductResult.getErrorCode();
+            //数据库中只保存以下四种创建失败产品的失败记录
+            List<String> errorCodeList = new ArrayList<String>();
+            errorCodeList.add("101"); //产品已经存在
+            errorCodeList.add("102"); //酒店创建失败
+            errorCodeList.add("103"); //价格代码不存在
+            errorCodeList.add("104"); //房型创建失败
+            if(!errorCodeList.contains(errorCode)){
+                result.add(new TCSL_VO_ProductResult(xmlProductResult));
                 continue;
             }
             //单个产品创建结果信息
@@ -418,13 +413,23 @@ public class TCSL_BO_Hotel {
         List<TCSL_VO_RSItem> list = changeToOTARS(roomStatus);
         //2.2将数据转换成soapXML
         Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
+        String url = p.getProperty("ota_uploadRoomStatus_url");
         OMElement soapXml = createRsXml(roomStatus.getHotelCode(),list,p);
         System.out.println("整合xml-----"+soapXml.toString());
         //2.3发送soap请求,成功返回成功，失败启动补偿线程
-        //TODO
-
-
-        return  result;
+        String soapResult = TCSL_UTIL_XML.sendSoap(url,"",soapXml);
+        if(!"".equals(soapResult)){ //发送soap成功
+            //解析soapResult判断是否OTA处理成功
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);
+            return result;
+        }else{ //发送soap失败
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTAFAIL);
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTAFAIL);
+            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL);
+            return result;
+        }
     }
 
     /**
@@ -488,9 +493,9 @@ public class TCSL_BO_Hotel {
         String nameSpaceXsiProperty = otaProperty.getProperty("ota_nameSpace_xsi");
         OMNamespace nameSpaceXsi =  factory.createOMNamespace(nameSpaceXsiProperty,"xsi");
         //创建xml节点
-        OMElement OTA_HotelAvailNotifRQ = factory.createOMElement("PmsHotelInfoRQ",namespace);
+        OMElement OTA_HotelAvailNotifRQ = factory.createOMElement("OTA_HotelAvailNotifRQ",namespace);
         OMElement AvailStatusMessages = factory.createOMElement("AvailStatusMessages",null);
-        AvailStatusMessages.addAttribute("HotelCode","酒店编码",null);
+        AvailStatusMessages.addAttribute("HotelCode",hotelCode,null);
         OTA_HotelAvailNotifRQ.addChild(AvailStatusMessages);
         //TODO
         return OTA_HotelAvailNotifRQ;

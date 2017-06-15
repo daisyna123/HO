@@ -2,6 +2,7 @@ package com.util;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -35,13 +36,18 @@ public class TCSL_UTIL_COMMON {
      * 工程启动初始化逻辑
      * 该方法内容将在工程完成bean创建后执行
      */
-    public static TCSL_UTIL_RSEqualize rsEqualize = null; //房态补偿线程
+    public static  TCSL_UTIL_RSEqualize rsEqualize = null; //房态补偿线程
     @PostConstruct
     public  void  init(){
-//        if(rsEqualize == null){
-//            rsEqualize = new TCSL_UTIL_RSEqualize();
-//        }
-//        rsEqualize.start();
+        if(rsEqualize == null){
+            rsEqualize = new TCSL_UTIL_RSEqualize();
+            try {
+                Thread.sleep(15000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        rsEqualize.start();
     }
 
 
