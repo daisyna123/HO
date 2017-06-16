@@ -72,14 +72,6 @@ public class TCSL_REST_Hotel {
     public TCSL_VO_Result uploadRoomStatus(@RequestBody TCSL_VO_RoomStatus roomStatus){
         logger.info("参数解析进入uploadRoomStatus()");
         TCSL_VO_Result result = new TCSL_VO_Result();
-        /**
-         * 测试线程启停
-         * if(TCSL_UTIL_COMMON.rsEqualize == null || "TERMINATED".equals(TCSL_UTIL_COMMON.rsEqualize.getState().toString())){
-                System.out.println("新创建补偿线程---start---");
-                TCSL_UTIL_COMMON.rsEqualize = new TCSL_UTIL_RSEqualize();
-                TCSL_UTIL_COMMON.rsEqualize.start();
-            }
-         */
         if(roomStatus == null){
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_INVALIDPARAM);//400
             result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_INVALIDPARAM);//参数不全
@@ -118,6 +110,7 @@ public class TCSL_REST_Hotel {
         logger.debug("参数:价格方案代码-"+roomPrice.getHotelCode());
         //执行上传房价相关逻辑
         result = boHotel.uploadRoomPrice(roomPrice);
+        //TODO
         return result;
 
     }

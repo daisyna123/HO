@@ -384,4 +384,12 @@
             AND CCHANNEL = #{channel}
             AND DTUPLOAD = TO_DATE(#{DTUPLOAD}, 'YYYY-MM-DD HH24:mi:ss')
     </update>
+    <update id="updateRsOtaTimeByKey">
+        UPDATE OTA_BSC_PRODUCT_STATUS
+        SET DTOTAUPLOAD = SYSDATE
+        WHERE
+        CSHOPID = #{hotelCode}
+        AND CPLANID = #{planId}
+        AND CCHANNEL = #{channel}
+    </update>
 </mapper>

@@ -221,4 +221,12 @@ public interface TCSL_DAO_Hotel {
             @Param("channel") String channel,
             @Param("DTUPLOAD") String DTUPLOAD
     );
+    /**
+     * 批量更新房态方案上传OTA时间,使用房态表主键
+     */
+    public void updateRsOtaTimeByKey(
+            @Param("hotelCode")String hotelCode,
+            @Param("planId") String planId,
+            @Param("channel") String channel
+    );
 }

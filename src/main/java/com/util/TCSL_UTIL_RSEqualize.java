@@ -6,6 +6,7 @@ import com.dao.TCSL_DAO_Hotel;
 import com.po.TCSL_PO_RoomStatus;
 import com.po.TCSL_PO_RsEqualize;
 import com.vo.TCSL_VO_RSItem;
+import com.xml.TCSL_XML_OTA_HotelAvailNotifRS;
 import org.apache.axiom.om.OMElement;
 import org.apache.log4j.Logger;
 
@@ -94,19 +95,23 @@ public class TCSL_UTIL_RSEqualize extends Thread{
                                 rsSet.add(roomStatus);
                             }
                         }
-                        /**
-                         * 批量更新房态方案上传OTA时间
-                         */
-                        //将房态数据按渠道拆分
-                        Iterator<TCSL_PO_RoomStatus> rsIte = rsSet.iterator();
-                        while (rsIte.hasNext()){
-                            TCSL_PO_RoomStatus poRoomStatus = rsIte.next();
-                            String shopId = poRoomStatus.getCSHOPID();
-                            String planId = poRoomStatus.getCPLANID();
-                            String channel = poRoomStatus.getCCHANNEL();
-                            Date dtUpload = poRoomStatus.getDTUPLOAD();
-                            String dtUploadStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dtUpload);
-                            daoHotel.updateRsOtaTime(shopId,planId,channel,dtUploadStr);
+                        TCSL_XML_OTA_HotelAvailNotifRS res = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_OTA_HotelAvailNotifRS.class,soapStr);
+                        //判断OTA解析是否成功
+                        if(res.getErrors() == null || "".equals(res.getErrors())){ //OTA解析成功
+                            /**
+                             * 批量更新房态方案上传OTA时间
+                             */
+                            //将房态数据按渠道拆分
+                            Iterator<TCSL_PO_RoomStatus> rsIte = rsSet.iterator();
+                            while (rsIte.hasNext()){
+                                TCSL_PO_RoomStatus poRoomStatus = rsIte.next();
+                                String shopId = poRoomStatus.getCSHOPID();
+                                String planId = poRoomStatus.getCPLANID();
+                                String channel = poRoomStatus.getCCHANNEL();
+                                Date dtUpload = poRoomStatus.getDTUPLOAD();
+                                String dtUploadStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dtUpload);
+                                daoHotel.updateRsOtaTime(shopId,planId,channel,dtUploadStr);
+                            }
                         }
                     }
                 }
