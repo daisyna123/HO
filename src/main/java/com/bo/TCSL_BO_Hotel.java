@@ -416,19 +416,35 @@ public class TCSL_BO_Hotel {
         Properties p = TCSL_UTIL_COMMON.getProperties("ota.properties");
         String url = p.getProperty("ota_uploadRoomStatus_url");
         OMElement soapXml = createRsXml(roomStatus.getHotelCode(),list,p);
-        System.out.println("整合xml-----"+soapXml.toString());
+        logger.info("整合soapXml-----"+soapXml.toString());
+
         //2.3发送soap请求,成功返回成功，失败启动补偿线程
         String soapResult = TCSL_UTIL_XML.sendSoap(url,"",soapXml);
         if(!"".equals(soapResult)){ //发送soap成功
             //解析soapResult判断是否OTA处理成功
             TCSL_XML_OTA_HotelAvailNotifRS res = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_OTA_HotelAvailNotifRS.class,soapResult);
-            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);
-            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
-            result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);
+            if(res.getErrors() == null || "".equals(res.getErrors())){ //OTA解析成功
+                //更新数据房态方案上传OTA时间
+                for(TCSL_VO_RSItem item :roomStatus.getProjects()){
+                    for (String channel :
+                            item.getDestinationSystemCodes()) { //每个线下房态方案应用的渠道
+                        daoHotel.updateRsOtaTimeByKey(hotelCode,item.getRatePlanCode(),channel);
+                    }
+                }
+//TODO
+
+                result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);
+                result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
+                result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);
+            }else{ //OTA解析失败
+                result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTA);
+                result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTA);//上传OTA失败
+                result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL);
+            }
             return result;
         }else{ //发送soap失败
-            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SOAPNO);
-            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SOAPNO);//soap发送失败
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTAFAIL);
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTAFAIL);//soap发送失败
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL);
             return result;
         }
@@ -538,7 +554,6 @@ public class TCSL_BO_Hotel {
             AvailStatusMessages.addChild(AvailStatusMessage);
         }
         OTA_HotelAvailNotifRQ.addChild(AvailStatusMessages);
-        //TODO
         return OTA_HotelAvailNotifRQ;
     }
 
