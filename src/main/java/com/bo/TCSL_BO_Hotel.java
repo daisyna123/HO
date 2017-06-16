@@ -7,6 +7,7 @@ import com.util.TCSL_UTIL_RESOURCE;
 import com.util.TCSL_UTIL_XML;
 import com.vo.*;
 
+import com.xml.TCSL_XML_OTA_HotelAvailNotifRS;
 import com.xml.TCSL_XML_PMSHotelMappingResult;
 import com.xml.TCSL_XML_PmsHotelInfoRS;
 import org.apache.axiom.om.*;
@@ -420,13 +421,14 @@ public class TCSL_BO_Hotel {
         String soapResult = TCSL_UTIL_XML.sendSoap(url,"",soapXml);
         if(!"".equals(soapResult)){ //发送soap成功
             //解析soapResult判断是否OTA处理成功
+            TCSL_XML_OTA_HotelAvailNotifRS res = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_OTA_HotelAvailNotifRS.class,soapResult);
             result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SUCCESS);
-            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SUCCESS);//成功
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_SUCCESS);
             return result;
         }else{ //发送soap失败
-            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_OTAFAIL);
-            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_OTAFAIL);
+            result.setErrorCode(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_CODE_SOAPNO);
+            result.setErrorText(TCSL_UTIL_RESOURCE.RESOURCE_ERROR_DES_SOAPNO);//soap发送失败
             result.setReturnCode(TCSL_UTIL_RESOURCE.RESOURCE_RETRUN_CODE_FAIL);
             return result;
         }
@@ -494,8 +496,47 @@ public class TCSL_BO_Hotel {
         OMNamespace nameSpaceXsi =  factory.createOMNamespace(nameSpaceXsiProperty,"xsi");
         //创建xml节点
         OMElement OTA_HotelAvailNotifRQ = factory.createOMElement("OTA_HotelAvailNotifRQ",namespace);
+        OTA_HotelAvailNotifRQ.declareNamespace(nameSpaceXsi);//添加多个命名空间
         OMElement AvailStatusMessages = factory.createOMElement("AvailStatusMessages",null);
-        AvailStatusMessages.addAttribute("HotelCode",hotelCode,null);
+        AvailStatusMessages.addAttribute("HotelCode",hotelCode,null);//节点属性
+        for(TCSL_VO_RSItem rsItem : list){
+            String start = rsItem.getStart();
+            String end = rsItem.getEnd();
+            String invTypeCode = rsItem.getInvTypeCode();
+            String ratePlanCode = rsItem.getRatePlanCode();
+            String mon = rsItem.getMon();
+            String tue = rsItem.getTue();
+            String webs = rsItem.getWeds();
+            String thur = rsItem.getThur();
+            String fri = rsItem.getFri();
+            String sat = rsItem.getSat();
+            String sun =  rsItem.getSun();
+            //创建节点
+            OMElement AvailStatusMessage = factory.createOMElement("AvailStatusMessage",null);
+            OMElement StatusApplicationControl = factory.createOMElement("StatusApplicationControl",null);
+            //创建节点属性
+            StatusApplicationControl.addAttribute("Start",start,null);
+            StatusApplicationControl.addAttribute("End",end,null);
+            StatusApplicationControl.addAttribute("InvTypeCode",invTypeCode,null);
+            StatusApplicationControl.addAttribute("RatePlanCode",ratePlanCode,null);
+            StatusApplicationControl.addAttribute("Mon",mon,null);
+            StatusApplicationControl.addAttribute("Tue",tue,null);
+            StatusApplicationControl.addAttribute("Weds",webs,null);
+            StatusApplicationControl.addAttribute("Thur",thur,null);
+            StatusApplicationControl.addAttribute("Fri",fri,null);
+            StatusApplicationControl.addAttribute("Sat",sat,null);
+            StatusApplicationControl.addAttribute("Sun",sun,null);
+            //创建节点
+            OMElement DestinationSystemCodes = factory.createOMElement("DestinationSystemCodes",null);
+            for (String channel:rsItem.getDestinationSystemCodes()){//渠道列表
+                OMElement DestinationSystemCode = factory.createOMElement("DestinationSystemCode",null);
+                DestinationSystemCode.setText(channel);
+                DestinationSystemCodes.addChild(DestinationSystemCode);
+            }
+            StatusApplicationControl.addChild(DestinationSystemCodes);
+            AvailStatusMessage.addChild(StatusApplicationControl);
+            AvailStatusMessages.addChild(AvailStatusMessage);
+        }
         OTA_HotelAvailNotifRQ.addChild(AvailStatusMessages);
         //TODO
         return OTA_HotelAvailNotifRQ;
