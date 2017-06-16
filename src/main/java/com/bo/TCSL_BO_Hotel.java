@@ -418,15 +418,7 @@ public class TCSL_BO_Hotel {
         OMElement soapXml = createRsXml(roomStatus.getHotelCode(),list,p);
         System.out.println("整合xml-----"+soapXml.toString());
         //2.3发送soap请求,成功返回成功，失败启动补偿线程
-      //  String soapResult = TCSL_UTIL_XML.sendSoap(url,"",soapXml);
-        /*String soapResult = "<OTA_HotelAvailNotifRS xmlns=\"http://www.opentravel.org/OTA/2003/05\"> \n" +
-                "\t\t<Success>发送成功</Success>\n" +
-                "\t</OTA_HotelAvailNotifRS>";*/
-        String soapResult="<OTA_HotelAvailNotifRS xmlns=\"http://www.opentravel.org/OTA/2003/05\"> \n" +
-                "\t\t<Errors>\n" +
-                "\t\t\t<Error>错误描述</Error>\n" +
-                "\t\t</Errors>\n" +
-                "\t</OTA_HotelAvailNotifRS>";
+        String soapResult = TCSL_UTIL_XML.sendSoap(url,"",soapXml);
         if(!"".equals(soapResult)){ //发送soap成功
             //解析soapResult判断是否OTA处理成功
             TCSL_XML_OTA_HotelAvailNotifRS res = TCSL_UTIL_XML.xmlTojavaBean(TCSL_XML_OTA_HotelAvailNotifRS.class,soapResult);
