@@ -4,7 +4,13 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 			http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
-
+    <!--工程启动初始化加载 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            classpath:spring/cxf.xml
+        </param-value>
+    </context-param>
   <!-- 处理编码问题 -->
   <filter>
     <description>字符集过滤器</description>
@@ -31,7 +37,13 @@
     <init-param>
       <description>spring mvc 配置文件</description>
       <param-name>contextConfigLocation</param-name>
-      <param-value>classpath:spring/spring-*.xml</param-value>
+      <!--<param-value>classpath:spring/spring-*.xml</param-value>-->
+        <param-value>
+            classpath:spring/spring-web.xml,
+            classpath:spring/spring-dao.xml,
+            classpath:spring/spring-rabbitmq.xml,
+            classpath:spring/spring-redis.xml
+        </param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
@@ -39,6 +51,17 @@
     <servlet-name>springMvc</servlet-name>
     <!-- 默认匹配所有请求 -->
     <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <!-- 配置cxf servlet-->
+  <servlet>
+    <servlet-name>cxfService</servlet-name>
+    <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+      <load-on-startup>2</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cxfService</servlet-name>
+    <url-pattern>/ws/*</url-pattern>
   </servlet-mapping>
 
   <!--欢迎页 -->
