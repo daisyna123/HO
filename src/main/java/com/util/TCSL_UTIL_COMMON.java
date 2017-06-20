@@ -39,15 +39,15 @@ public class TCSL_UTIL_COMMON {
     public static  TCSL_UTIL_RSEqualize rsEqualize = null; //房态补偿线程
     @PostConstruct
     public  void  init(){
-        if(rsEqualize == null){
-            rsEqualize = new TCSL_UTIL_RSEqualize();
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        rsEqualize.start();
+//        if(rsEqualize == null){
+//            rsEqualize = new TCSL_UTIL_RSEqualize();
+//            try {
+//                Thread.sleep(15000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        rsEqualize.start();
     }
 
 

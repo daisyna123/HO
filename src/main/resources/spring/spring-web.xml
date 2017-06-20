@@ -9,31 +9,11 @@
 		http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
 		http://www.springframework.org/schema/context
 		http://www.springframework.org/schema/context/spring-context-4.1.xsd">
-    <!-- springMVC -->
-    <!-- 简化配置： (1) 自动注册 DefaultAnnotationHandlerMapping, AnnotationMethodHandlerAdapter
-        (2) 提供一系列功能：数据绑定;数字和日期的 format;@NumberFormat;@DateTimeFormat;xml 和 json 的默认读写支持 -->
-  <!--  <mvc:annotation-driven />-->
-    <!--
-        解决@ResponseBody返回中文乱码问题
-    -->
-    <!--<mvc:annotation-driven>
-        <mvc:message-converters>
-            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
-                <property name="supportedMediaTypes">
-                    <list>
-                        <value>text/plain;charset=UTF-8</value>
-                        <value>text/html;charset=UTF-8</value>
-                    </list>
-                </property>
-            </bean>
-        </mvc:message-converters>
-    </mvc:annotation-driven>-->
 
     <!-- 启用默认配置 -->
     <mvc:annotation-driven>
         <mvc:message-converters register-defaults="true">
-            <bean
-                    class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
                         <value>application/json; charset=UTF-8</value>
@@ -49,8 +29,8 @@
         1. 加入对静态资源的处理：js.gif;js.png
         2. 允许使用 "/" 做整体映射 -->
     <mvc:default-servlet-handler/>
-    <!-- 扫描 web 相关的 bean -->
     <!-- 创建手动获取bean工具类 -->
     <bean id="springContext" class="com.util.TCSL_UTIL_SpringContext"></bean>
+    <!-- 扫描 web 相关的 bean -->
     <context:component-scan base-package="com" />
 </beans>
