@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd"> <!-- 注意jaxrs.xsd所在文件夹为schemas不是schema-->
+
+    <!-- 加载cxf -->
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+
+    <!-- webService配置
+        endPoint id 对外webservice的唯一标识,implementor 接口实现类,
+        address 访问接口路径，前面为web.xml中设置的cxf访问路径
+    -->
+
+
+    <jaxws:endpoint id="hello123" implementor="#helloWorld" address="/hello" />
+    <jaxws:endpoint id="wsAddOrder" implementor="#tcsl_ws_addOrder" address="/addOrder" />
+</beans>
