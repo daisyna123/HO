@@ -4,13 +4,18 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 			http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
-    <!--工程启动初始化加载 -->
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>
-            classpath:spring/cxf.xml
-        </param-value>
-    </context-param>
+  <!-- spring容器启动时加载 -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+        classpath:spring/spring-*.xml
+    </param-value>
+  </context-param>
+
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
   <!-- 处理编码问题 -->
   <filter>
     <description>字符集过滤器</description>
@@ -37,20 +42,16 @@
     <init-param>
       <description>spring mvc 配置文件</description>
       <param-name>contextConfigLocation</param-name>
-      <!--<param-value>classpath:spring/spring-*.xml</param-value>-->
-        <param-value>
-            classpath:spring/spring-web.xml,
-            classpath:spring/spring-dao.xml,
-            classpath:spring/spring-rabbitmq.xml,
-            classpath:spring/spring-redis.xml
-        </param-value>
+      <param-value>
+          <!-- 配置文件放到context-param中，在spring加载的时候进行加载 -->
+      </param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>springMvc</servlet-name>
     <!-- 默认匹配所有请求 -->
-    <url-pattern>/</url-pattern>
+    <url-pattern>/rs/*</url-pattern>
   </servlet-mapping>
 
   <!-- 配置cxf servlet-->
